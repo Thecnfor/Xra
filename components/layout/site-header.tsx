@@ -25,22 +25,24 @@ export function SiteHeader({
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 flex items-start justify-between p-6 pointer-events-none",
+        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 pointer-events-none",
         className,
       )}
     >
       {/* 左侧区域 */}
-      <div className="pointer-events-auto relative z-20 flex h-12 items-center">
+      <div className="pointer-events-auto relative z-20 flex items-center">
         {left ?? <DefaultLeft />}
       </div>
 
       {/* 中间灵动岛 - 绝对定位居中 */}
-      <div className="pointer-events-auto absolute left-1/2 top-6 -translate-x-1/2 z-20">
-        <DynamicIsland>{center}</DynamicIsland>
+      <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <div className="pointer-events-auto">
+          <DynamicIsland>{center}</DynamicIsland>
+        </div>
       </div>
 
       {/* 右侧区域 */}
-      <div className="pointer-events-auto relative z-20 flex h-12 items-center">
+      <div className="pointer-events-auto relative z-20 flex items-center">
         {right ?? <DefaultRight />}
       </div>
     </header>

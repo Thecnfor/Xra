@@ -2,7 +2,7 @@ import { FullScreenContainer } from "@/components/features/full-screen-container
 import { BrandLogo } from "@/components/features/meta/brand-logo";
 import { Button } from "@/components/features/meta/button";
 import NoSSR from "@/components/ui/dynamic";
-import RakLink from "@/components/ui/Rak_link";
+import RakLink from "@/components/ui/background/Rak_link";
 
 export default function Home() {
   return (

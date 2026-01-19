@@ -80,11 +80,49 @@ export default function RakLink({
     const handleResize = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
-        initParticles();
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        
+        // 更新画布尺寸
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // 更新全局宽高变量
+        width = newWidth;
+        height = newHeight;
+
+        // 调整现有粒子位置，使其不超出新边界
+        particles.forEach(p => {
+          if (p.x > newWidth) p.x = Math.random() * newWidth;
+          if (p.y > newHeight) p.y = Math.random() * newHeight;
+        });
+
+        // 根据新面积动态调整粒子数量 (维持密度)
+        const baseCount = Math.floor((newWidth * newHeight) / 10000);
+        const targetCount = Math.min(
+          Math.max(Math.floor(baseCount * density), 40),
+          300
+        );
+
+        // 如果粒子太少，补充
+        if (particles.length < targetCount) {
+          const addCount = targetCount - particles.length;
+          for (let i = 0; i < addCount; i++) {
+            particles.push({
+              x: Math.random() * newWidth,
+              y: Math.random() * newHeight,
+              vx: (Math.random() - 0.5) * baseSpeed,
+              vy: (Math.random() - 0.5) * baseSpeed,
+              size: (Math.random() * 2 + 2) * size,
+            });
+          }
+        } 
+        // 如果粒子太多，移除
+        else if (particles.length > targetCount) {
+          particles.splice(targetCount);
+        }
+
+        // 不再调用 initParticles() 重置所有粒子
       }, 200);
     };
 
