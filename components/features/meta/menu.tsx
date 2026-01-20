@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { selectMenuOpen, selectSetMenuOpen, useAppStore } from "@/stores";
 
 interface MenuButtonProps {
   className?: string;
@@ -9,20 +10,29 @@ interface MenuButtonProps {
 }
 
 const MenuButton = ({ className, checked, onChange }: MenuButtonProps) => {
+  const menuOpen = useAppStore(selectMenuOpen);
+  const setMenuOpen = useAppStore(selectSetMenuOpen);
+
+  const resolvedChecked = checked ?? menuOpen;
+  const resolvedOnChange = onChange ?? setMenuOpen;
+
   return (
-    <label className={cn("cursor-pointer block", className)}>
-      <input
-        type="checkbox"
-        className="hidden peer"
-        checked={checked}
-        onChange={(e) => onChange?.(e.target.checked)}
-      />
+    <button
+      type="button"
+      aria-label={resolvedChecked ? "关闭菜单" : "打开菜单"}
+      aria-pressed={resolvedChecked}
+      className={cn(
+        "group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 backdrop-blur-sm transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+        className,
+      )}
+      onClick={() => resolvedOnChange(!resolvedChecked)}
+    >
       <svg
         viewBox="0 0 32 32"
+        data-open={resolvedChecked ? "true" : "false"}
         className={cn(
-          "h-[3em] transition-transform duration-600 ease-in-out peer-checked:-rotate-45",
-          // 当 peer (input) 被选中时，修改子元素 .line-top-bottom 的样式
-          "peer-checked:[&_.line-top-bottom]:[stroke-dasharray:20_300] peer-checked:[&_.line-top-bottom]:[stroke-dashoffset:-32.42]",
+          "h-7 w-7 transition-transform duration-600 ease-in-out data-[open=true]:-rotate-45",
+          "data-[open=true]:[&_.line-top-bottom]:[stroke-dasharray:20_300] data-[open=true]:[&_.line-top-bottom]:[stroke-dashoffset:-32.42]",
         )}
       >
         <path
@@ -34,7 +44,7 @@ const MenuButton = ({ className, checked, onChange }: MenuButtonProps) => {
           d="M7 16 27 16"
         />
       </svg>
-    </label>
+    </button>
   );
 };
 

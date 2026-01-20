@@ -6,6 +6,7 @@
   - ⚠️ **重要**: 永远不自动安装依赖。如果需要引入新库，请分析利弊并建议用户安装。
 - **语言**: 代码命名使用英文，注释和文档使用中文。
 - **技术栈**: Next.js (App Router), TypeScript, Tailwind CSS.
+不要pnpm dev，只要pnpm lint和pnpm build即可
 
 ## 2. Xra 项目是一个综合型全栈网站
 

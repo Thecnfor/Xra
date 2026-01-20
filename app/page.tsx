@@ -1,16 +1,13 @@
 import { FullScreenContainer } from "@/components/features/full-screen-container";
 import { BrandLogo } from "@/components/features/meta/brand-logo";
 import { Button } from "@/components/features/meta/button";
-import NoSSR from "@/components/ui/dynamic";
 import RakLink from "@/components/ui/background/Rak_link";
 
 export default function Home() {
   return (
     <>
-      {/* 背景层：粒子网络 - 使用 NoSSR 包裹以跳过服务端渲染 */}
-      <NoSSR>
-        <RakLink className="opacity-50 dark:opacity-40" />
-      </NoSSR>
+      {/* 背景层：粒子网络 - RakLink 内部已处理 NoSSR */}
+      <RakLink className="opacity-50 dark:opacity-40" />
 
       {/* 主体内容层 */}
       <FullScreenContainer>

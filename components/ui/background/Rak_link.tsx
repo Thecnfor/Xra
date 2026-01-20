@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 
 /**
  * RakLink 背景组件配置接口
@@ -43,7 +44,7 @@ const hexToRgb = (hex: string) => {
 /**
  * RakLink - 极简主义科技风神经网络背景
  */
-export default function RakLink({
+function RakLink({
   color = "#C8C8C8",
   density = 1.0,
   size = 1.0,
@@ -259,3 +260,8 @@ export default function RakLink({
     </div>
   );
 }
+
+// 使用 dynamic 导出组件并禁用 SSR
+export default dynamic(() => Promise.resolve(RakLink), {
+  ssr: false,
+});
