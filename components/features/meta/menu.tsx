@@ -22,7 +22,8 @@ const MenuButton = ({ className, checked, onChange }: MenuButtonProps) => {
       aria-label={resolvedChecked ? "关闭菜单" : "打开菜单"}
       aria-pressed={resolvedChecked}
       className={cn(
-        "group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full surface-glass text-foreground/80 transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground cursor-pointer focus-ring",
+        "group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full border border-transparent bg-transparent text-foreground/80 backdrop-blur-none transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground cursor-pointer focus-ring",
+        resolvedChecked ? "border-border/60 bg-background/40 backdrop-blur-sm" : null,
         className,
       )}
       onClick={() => resolvedOnChange(!resolvedChecked)}
@@ -31,7 +32,7 @@ const MenuButton = ({ className, checked, onChange }: MenuButtonProps) => {
         viewBox="0 0 32 32"
         data-open={resolvedChecked ? "true" : "false"}
         className={cn(
-          "h-7 w-7 transition-transform duration-600 ease-in-out data-[open=true]:-rotate-45",
+          "h-7 w-7 transition-[rotate] duration-600 ease-in-out data-[open=true]:-rotate-45",
           "data-[open=true]:[&_.line-top-bottom]:[stroke-dasharray:20_300] data-[open=true]:[&_.line-top-bottom]:[stroke-dashoffset:-32.42]",
         )}
       >

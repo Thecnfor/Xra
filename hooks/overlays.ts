@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-export function useMenuPresence(open: boolean, exitMs: number) {
+export function usePresence(open: boolean, exitMs: number) {
   const [present, setPresent] = React.useState(false);
   const shouldRender = open || present;
 
@@ -72,4 +72,13 @@ export function useLockBodyScroll(locked: boolean) {
       body.style.paddingRight = prevPaddingRight;
     };
   }, [locked]);
+}
+
+export function useOverlayControls(open: boolean, onClose: () => void) {
+  const initialFocusRef = React.useRef<HTMLDivElement | null>(null);
+  useRestoreFocus(open, initialFocusRef);
+  useEscapeToClose(open, onClose);
+  useLockBodyScroll(open);
+
+  return { initialFocusRef };
 }
