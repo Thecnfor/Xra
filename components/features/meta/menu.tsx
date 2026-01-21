@@ -22,7 +22,7 @@ const MenuButton = ({ className, checked, onChange }: MenuButtonProps) => {
       aria-label={resolvedChecked ? "关闭菜单" : "打开菜单"}
       aria-pressed={resolvedChecked}
       className={cn(
-        "group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 backdrop-blur-sm transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+        "group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full surface-glass text-foreground/80 transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground cursor-pointer focus-ring",
         className,
       )}
       onClick={() => resolvedOnChange(!resolvedChecked)}

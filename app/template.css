@@ -1,0 +1,21 @@
+@reference "tailwindcss";
+
+@layer utilities {
+    .duration-sidebar {
+        transition-duration: .64s;
+        animation-duration: .64s;
+    }
+
+    .ease-curve-sidebar {
+        transition-timing-function: cubic-bezier(.22, 1, .36, 1);
+        animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .surface-glass {
+        @apply border border-border/60 bg-background/40 backdrop-blur-sm;
+    }
+
+    .focus-ring {
+        @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40;
+    }
+}

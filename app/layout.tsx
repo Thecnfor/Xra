@@ -67,7 +67,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${sourceHanSans.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${sourceHanSans.variable}`}
       >
         <AppStoreProvider>
           <SiteHeader />

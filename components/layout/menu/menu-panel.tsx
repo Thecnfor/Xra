@@ -23,7 +23,7 @@ function MenuPanel({ className, open, onClose, initialFocusRef }: MenuPanelProps
     >
       <div
         className={cn(
-          "absolute inset-0 transform-gpu bg-gradient-to-l from-foreground/12 via-foreground/6 to-transparent backdrop-blur-xl transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.02,0.98,0.08,1)] motion-reduce:transition-none dark:from-black/50 dark:via-black/24 dark:to-transparent",
+          "absolute inset-0 transform-gpu bg-gradient-to-l from-foreground/12 via-foreground/6 to-transparent backdrop-blur-xl transition-[opacity,transform,translate] duration-sidebar ease-curve-sidebar motion-reduce:transition-none dark:from-black/50 dark:via-black/24 dark:to-transparent",
           open ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6",
         )}
         onMouseDown={(e) => {
@@ -34,7 +34,7 @@ function MenuPanel({ className, open, onClose, initialFocusRef }: MenuPanelProps
 
       <div
         className={cn(
-          "absolute right-0 top-0 h-full w-[min(440px,100vw)] transform-gpu will-change-transform transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.02,0.98,0.08,1)] motion-reduce:transition-none",
+          "absolute right-0 top-0 h-full w-[min(440px,100vw)] transform-gpu will-change-transform transition-[transform,translate,opacity] duration-sidebar ease-curve-sidebar motion-reduce:transition-none",
           open ? "translate-x-0 opacity-100" : "translate-x-full opacity-100",
         )}
         role="dialog"
@@ -70,7 +70,7 @@ function MenuPanel({ className, open, onClose, initialFocusRef }: MenuPanelProps
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="group block rounded-2xl border border-transparent px-4 py-3 transition-colors hover:border-border/60 hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                    className="group block rounded-2xl border border-transparent px-4 py-3 transition-colors hover:border-border/60 hover:bg-foreground/5 focus-ring"
                     onClick={onClose}
                   >
                     <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ function MenuPanel({ className, open, onClose, initialFocusRef }: MenuPanelProps
             </div>
 
             <div className="mt-auto pt-8">
-              <div className="rounded-2xl border border-border/60 bg-background/40 px-4 py-3 text-xs text-muted-foreground backdrop-blur-sm">
+              <div className="rounded-2xl surface-glass px-4 py-3 text-xs text-muted-foreground">
                 按 Esc 关闭，或点击空白处返回
               </div>
             </div>
