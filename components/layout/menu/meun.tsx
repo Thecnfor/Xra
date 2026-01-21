@@ -18,7 +18,7 @@ export default function SiteMenu({ className }: { className?: string }) {
 
     useRestoreFocus(open, initialFocusRef);
     useEscapeToClose(open, close);
-    useLockBodyScroll(open);
+  useLockBodyScroll(open);
 
     return (
         <MenuPanel
