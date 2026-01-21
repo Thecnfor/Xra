@@ -16,8 +16,8 @@ function MenuPanel({ className, open, onClose, initialFocusRef }: MenuPanelProps
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[60] transition-opacity duration-300 ease-out",
-        open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-100",
+        "fixed inset-0 z-[80]",
+        open ? "pointer-events-auto" : "pointer-events-none",
         className,
       )}
     >
