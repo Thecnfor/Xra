@@ -4,9 +4,9 @@ export type HeaderNavItem = {
 };
 
 const homeHeaderNavItems: HeaderNavItem[] = [
-    { label: "VANeuxs", href: "/vaneuxs" },
-    { label: "Kongroo", href: "/kongroo" },
-    { label: "LUMIS", href: "/lumis" },
+    { label: "VANeuxs", href: "/VANeuxs" },
+    { label: "Kongroo", href: "/Kongroo" },
+    { label: "LUMIS", href: "/LUMIS" },
     { label: "HOME", href: "/" },
 ];
 

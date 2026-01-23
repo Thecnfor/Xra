@@ -4,6 +4,7 @@ import { HeaderNav } from "./header-nav";
 import { XRAK } from "./header-logo";
 import { RealtimeIsland } from "./realtime-island";
 import { ResponsivePortal } from "@/overlays";
+import { AnimatedThemeToggler } from "@/features/meta/animated-theme-toggler";
 import MenuButton from "@/features/meta/menu";
 
 export function SiteHeader({
@@ -38,7 +39,13 @@ export function SiteHeader({
 
           <div className="pointer-events-auto ml-auto flex items-center">
             {right ?? (
-              <MenuButton className="text-neutral-900 dark:text-neutral-100" />
+              <div className="flex items-center gap-2">
+                <AnimatedThemeToggler
+                  aria-label="切换主题"
+                  className="group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full border border-transparent bg-transparent text-foreground/80 backdrop-blur-none transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground cursor-pointer focus-ring [&>svg]:h-5 [&>svg]:w-5"
+                />
+                <MenuButton />
+              </div>
             )}
           </div>
         </div>

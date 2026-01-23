@@ -5,6 +5,7 @@ import "./globals.css";
 import { SiteHeader } from "@/layout/header";
 import SiteMenu from "@/layout/menu";
 import { AppStoreProvider } from "@/stores";
+import { ThemeSync } from "@/features/meta/theme-sync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,17 +60,64 @@ export const metadata: Metadata = {
   description: "Xra 新一代全栈平台",
 };
 
+const themeInitScript = `(() => {
+  const storageKey = "theme";
+  const root = document.documentElement;
+  const mql = window.matchMedia("(prefers-color-scheme: dark)");
+  const normalizeMode = (value) =>
+    value === "light" || value === "dark" || value === "system" ? value : "system";
+  const getSystemResolved = () => (mql.matches ? "dark" : "light");
+  const applyResolved = (resolved, mode) => {
+    root.classList.toggle("dark", resolved === "dark");
+    root.classList.toggle("light", resolved === "light");
+    root.dataset.themeMode = mode;
+    root.dataset.themeResolved = resolved;
+    root.style.colorScheme = resolved;
+  };
+  const readStoredMode = () => {
+    try {
+      return normalizeMode(localStorage.getItem(storageKey));
+    } catch {
+      return "system";
+    }
+  };
+  const applyMode = (mode) => {
+    const resolved = mode === "system" ? getSystemResolved() : mode;
+    applyResolved(resolved, mode);
+  };
+
+  applyMode(readStoredMode());
+
+  const onSystemChange = () => {
+    const mode = readStoredMode();
+    if (mode !== "system") return;
+    applyMode("system");
+  };
+
+  if (mql.addEventListener) mql.addEventListener("change", onSystemChange);
+  else mql.addListener(onSystemChange);
+
+  window.addEventListener("storage", (e) => {
+    if (e.key !== storageKey) return;
+    applyMode(normalizeMode(e.newValue));
+  });
+})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${sourceHanSans.variable}`}
       >
         <AppStoreProvider>
+          <ThemeSync />
           <SiteHeader />
           <SiteMenu />
           {children}

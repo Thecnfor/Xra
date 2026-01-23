@@ -139,6 +139,18 @@
 }
 
 @layer utilities {
+  .dark .bg-white {
+    background-color: var(--background);
+  }
+
+  .dark .text-black {
+    color: var(--foreground);
+  }
+
+  .dark .border-black {
+    border-color: var(--border);
+  }
+
   .xra-header-nav-item {
     --xra-nav-dur: 620ms;
     --xra-nav-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -173,4 +185,9 @@
       transition: none !important;
     }
   }
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }
