@@ -3,26 +3,17 @@ import { cn } from "@/lib/utils";
 import { DynamicIsland } from "./dynamic-island";
 import { HeaderActions } from "./header-actions";
 import { XRAK } from "./header-logo";
-import { HeaderLeftPortal } from "./header-left-portal";
-
-interface SiteHeaderProps {
-  /** 左侧内容，默认为 Logo */
-  left?: React.ReactNode;
-  /** 右侧内容，默认为 菜单按钮 */
-  right?: React.ReactNode;
-  /** 中间灵动岛内容 */
-  center?: React.ReactNode;
-  className?: string;
-}
+import { ResponsivePortal } from "@/components/ui/overlays";
 
 export function SiteHeader({
-  left,
   right,
   center,
   className,
-}: SiteHeaderProps) {
-  const leftNode = left ?? <XRAK />;
-
+}: {
+  right?: React.ReactNode;
+  center?: React.ReactNode;
+  className?: string;
+}) {
   return (
     <>
       <header
@@ -44,12 +35,13 @@ export function SiteHeader({
       <div className="fixed top-0 left-0 right-0 z-[70] p-6 pointer-events-none">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
           <div id="site-header-left-mobile" className="pointer-events-auto justify-self-start">
-            <HeaderLeftPortal
-              desktopSlotId="site-header-left-desktop"
-              mobileSlotId="site-header-left-mobile"
+            <ResponsivePortal
+              query="(min-width: 640px)"
+              whenTrueTargetId="site-header-left-desktop"
+              whenFalseTargetId="site-header-left-mobile"
             >
-              {leftNode}
-            </HeaderLeftPortal>
+              <XRAK />
+            </ResponsivePortal>
           </div>
           <div className="pointer-events-auto justify-self-center">
             <DynamicIsland>{center}</DynamicIsland>

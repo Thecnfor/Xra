@@ -7,16 +7,34 @@
  * - 统一导入：业务侧只从这里 import，避免到处写深路径
  *
  * 推荐搭配：
- * - 组件：SlidePanel（TopSheet / Drawer）
+ * - 组件：Sheet（TopSheet / Drawer）
  * - hooks：useOverlayControls（聚合焦点/键盘/滚动控制），usePresence（关闭退场期间保持挂载）
  */
-export { default as SlidePanel } from "./slide-panel";
-export type { SlidePanelProps, SlidePanelSide } from "./slide-panel";
+export { default as Sheet } from "./sheet";
+export type { SheetProps, SheetSide } from "./sheet";
+
+export { OverlayBackdrop } from "./primitives/overlay-backdrop";
+export type { OverlayBackdropProps } from "./primitives/overlay-backdrop";
+
+export { OverlayContent } from "./primitives/overlay-content";
+export type { OverlayContentProps } from "./primitives/overlay-content";
+
+export { OverlayRoot } from "./primitives/overlay-root";
+export type { OverlayRootProps } from "./primitives/overlay-root";
+
+export { ResponsivePortal } from "./portal/responsive-portal";
+export type { ResponsivePortalProps } from "./portal/responsive-portal";
+
+export { default as MenuOverlay } from "./menu/menu-overlay";
+export type { MenuOverlayItem, MenuOverlayProps } from "./menu/menu-overlay";
 
 export {
   useEscapeToClose,
   useLockBodyScroll,
+  useOverlayBehavior,
   useOverlayControls,
   usePresence,
   useRestoreFocus,
 } from "@/hooks/overlays";
+
+export type { OverlayBehaviorOptions } from "@/hooks/overlays";

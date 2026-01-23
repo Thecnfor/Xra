@@ -3,52 +3,55 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { menuItems, type MenuItem } from "./menu-items";
-import { SlidePanel, type SlidePanelSide } from "@/components/ui/overlays";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import Sheet, { type SheetSide } from "../sheet";
 
-export type MenuPanelProps = {
+export type MenuOverlayItem = {
+  href: string;
+  label: string;
+  description?: string;
+};
+
+export type MenuOverlayProps = {
   className?: string;
   open: boolean;
   onClose: () => void;
+  items: MenuOverlayItem[];
   label?: string;
-  items?: MenuItem[];
-  onNavigate?: (item: MenuItem) => void;
+  onNavigate?: (item: MenuOverlayItem) => void;
   header?: React.ReactNode;
   footer?: React.ReactNode;
-  initialFocusRef?: React.RefObject<HTMLDivElement | null>;
+  logoSlotId?: string;
   overlayClassName?: string;
   panelClassName?: string;
   exitMs?: number;
   unmountOnClose?: boolean;
-  mobileSide?: Extract<SlidePanelSide, "top" | "bottom">;
-  desktopSide?: Extract<SlidePanelSide, "left" | "right">;
+  mobileSide?: Extract<SheetSide, "top" | "bottom">;
+  desktopSide?: Extract<SheetSide, "left" | "right">;
 };
 
-function MenuPanel({
+function MenuOverlay({
   className,
   open,
   onClose,
+  items,
   label = "菜单",
-  items = menuItems,
   onNavigate,
   header,
   footer,
-  initialFocusRef,
+  logoSlotId = "xra-menu-logo-slot",
   overlayClassName,
   panelClassName,
   exitMs,
   unmountOnClose,
   mobileSide = "top",
   desktopSide = "right",
-}: MenuPanelProps) {
+}: MenuOverlayProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
-  const side: SlidePanelSide = isDesktop ? desktopSide : mobileSide;
+  const side: SheetSide = isDesktop ? desktopSide : mobileSide;
   const enableStagger = side === "top";
-  const fallbackFocusRef = React.useRef<HTMLDivElement | null>(null);
-  const resolvedFocusRef = initialFocusRef ?? fallbackFocusRef;
   const handleNavigate = React.useCallback(
-    (item: MenuItem) => {
+    (item: MenuOverlayItem) => {
       onNavigate?.(item);
       onClose();
     },
@@ -56,7 +59,7 @@ function MenuPanel({
   );
 
   return (
-    <SlidePanel
+    <Sheet
       key={side}
       className={className}
       open={open}
@@ -125,22 +128,14 @@ function MenuPanel({
           )}
         >
           <div className="flex items-start">
-            <div
-              ref={resolvedFocusRef}
-              tabIndex={-1}
-              className="select-none outline-none"
-            >
-              {header ?? (
-                <>
-                  <div className="text-xs font-medium tracking-[0.22em] text-muted-foreground">
-                    MENU
-                  </div>
-                  <div className="mt-2 text-xl font-semibold tracking-tight">
-                    XRAK
-                  </div>
-                </>
-              )}
-            </div>
+            {header ?? (
+              <div className="select-none">
+                <div id={logoSlotId} className="h-8" />
+                <div className="mt-2 text-xs font-medium tracking-[0.22em] text-muted-foreground">
+                  MENU
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-10">
@@ -202,8 +197,8 @@ function MenuPanel({
           </div>
         </div>
       </div>
-    </SlidePanel>
+    </Sheet>
   );
 }
 
-export default React.memo(MenuPanel);
+export default React.memo(MenuOverlay);

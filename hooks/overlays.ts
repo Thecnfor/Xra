@@ -74,11 +74,31 @@ export function useLockBodyScroll(locked: boolean) {
   }, [locked]);
 }
 
+export type OverlayBehaviorOptions = {
+  open: boolean;
+  onClose: () => void;
+  initialFocusRef?: React.RefObject<HTMLElement | null>;
+  closeOnEscape?: boolean;
+  lockScroll?: boolean;
+  restoreFocus?: boolean;
+};
+
+export function useOverlayBehavior({
+  open,
+  onClose,
+  initialFocusRef,
+  closeOnEscape = true,
+  lockScroll = true,
+  restoreFocus = true,
+}: OverlayBehaviorOptions) {
+  useRestoreFocus(open && restoreFocus, initialFocusRef);
+  useEscapeToClose(open && closeOnEscape, onClose);
+  useLockBodyScroll(open && lockScroll);
+}
+
 export function useOverlayControls(open: boolean, onClose: () => void) {
   const initialFocusRef = React.useRef<HTMLDivElement | null>(null);
-  useRestoreFocus(open, initialFocusRef);
-  useEscapeToClose(open, onClose);
-  useLockBodyScroll(open);
+  useOverlayBehavior({ open, onClose, initialFocusRef });
 
   return { initialFocusRef };
 }

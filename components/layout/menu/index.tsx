@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import { selectMenuOpen, selectSetMenuOpen, useAppStore } from "@/stores";
-import { useOverlayControls } from "@/hooks/overlays";
-import MenuPanel, { type MenuPanelProps } from "./menu-panel";
+import { MenuOverlay, type MenuOverlayProps } from "@/components/ui/overlays";
+import { menuItems } from "./menu-items";
 
 type SiteMenuProps = {
   className?: string;
-  panelProps?: Omit<MenuPanelProps, "open" | "onClose" | "initialFocusRef">;
+  panelProps?: Omit<MenuOverlayProps, "open" | "onClose" | "items"> & {
+    items?: MenuOverlayProps["items"];
+  };
 };
 
 export default function SiteMenu({ className, panelProps }: SiteMenuProps) {
@@ -15,16 +17,14 @@ export default function SiteMenu({ className, panelProps }: SiteMenuProps) {
   const setOpen = useAppStore(selectSetMenuOpen);
 
   const close = React.useCallback(() => setOpen(false), [setOpen]);
-  const { initialFocusRef } = useOverlayControls(open, close);
 
   return (
-    <MenuPanel
+    <MenuOverlay
       {...panelProps}
       className={className}
       open={open}
       onClose={close}
-      initialFocusRef={initialFocusRef}
+      items={panelProps?.items ?? menuItems}
     />
   );
 }
-

@@ -2,25 +2,32 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { usePresence } from "@/hooks/overlays";
+import { useOverlayBehavior, usePresence } from "@/hooks/overlays";
+import { OverlayBackdrop } from "./primitives/overlay-backdrop";
+import { OverlayContent } from "./primitives/overlay-content";
+import { OverlayRoot } from "./primitives/overlay-root";
 
-export type SlidePanelSide = "top" | "right" | "left" | "bottom";
+export type SheetSide = "top" | "right" | "left" | "bottom";
 
-export type SlidePanelProps = {
+export type SheetProps = {
   className?: string;
   open: boolean;
   onClose: () => void;
-  side: SlidePanelSide;
+  side: SheetSide;
   label?: string;
   overlayClassName?: string;
   panelClassName?: string;
   exitMs?: number;
   unmountOnClose?: boolean;
   closeOnOverlayPointerDown?: boolean;
+  closeOnEscape?: boolean;
+  lockScroll?: boolean;
+  restoreFocus?: boolean;
+  initialFocusRef?: React.RefObject<HTMLDivElement | null>;
   children: React.ReactNode;
 };
 
-function getPanelPlacement(side: SlidePanelSide) {
+function getPanelPlacement(side: SheetSide) {
   switch (side) {
     case "top":
       return {
@@ -50,7 +57,7 @@ function getPanelPlacement(side: SlidePanelSide) {
   }
 }
 
-function SlidePanel({
+function Sheet({
   className,
   open,
   onClose,
@@ -61,12 +68,27 @@ function SlidePanel({
   exitMs = 640,
   unmountOnClose = true,
   closeOnOverlayPointerDown = true,
+  closeOnEscape = true,
+  lockScroll = true,
+  restoreFocus = true,
+  initialFocusRef,
   children,
-}: SlidePanelProps) {
+}: SheetProps) {
   const presence = usePresence(open, exitMs);
   const shouldRender = unmountOnClose ? presence : true;
   const placement = getPanelPlacement(side);
   const [motionOpen, setMotionOpen] = React.useState(false);
+  const fallbackFocusRef = React.useRef<HTMLDivElement | null>(null);
+  const resolvedFocusRef = initialFocusRef ?? fallbackFocusRef;
+
+  useOverlayBehavior({
+    open,
+    onClose,
+    initialFocusRef: resolvedFocusRef,
+    closeOnEscape,
+    lockScroll,
+    restoreFocus,
+  });
 
   React.useEffect(() => {
     if (!open) {
@@ -82,41 +104,30 @@ function SlidePanel({
   if (!shouldRender) return null;
 
   return (
-    <div
-      className={cn(
-        "fixed inset-0 z-[80]",
-        open ? "pointer-events-auto" : "pointer-events-none",
-        className,
-      )}
-    >
-      <div
-        className={cn(
-          "absolute inset-0 transition-[opacity] duration-sidebar ease-curve-sidebar motion-reduce:transition-none",
-          motionOpen ? "opacity-100" : "opacity-0",
-          overlayClassName,
-        )}
-        onPointerDown={(e) => {
-          if (!open) return;
-          if (!closeOnOverlayPointerDown) return;
-          if (e.target === e.currentTarget) onClose();
-        }}
+    <OverlayRoot open={open} className={className}>
+      <OverlayBackdrop
+        open={open}
+        visible={motionOpen}
+        className={overlayClassName}
+        closeOnPointerDown={closeOnOverlayPointerDown}
+        onDismiss={onClose}
       />
 
-      <div
+      <OverlayContent
+        ref={resolvedFocusRef}
+        label={label}
+        tabIndex={-1}
         className={cn(
           "absolute will-change-[translate] transition-[translate,opacity] duration-sidebar ease-curve-sidebar motion-reduce:transition-none",
           placement.placement,
           motionOpen ? placement.openClass : placement.closedClass,
           panelClassName,
         )}
-        role="dialog"
-        aria-modal="true"
-        aria-label={label}
       >
         {children}
-      </div>
-    </div>
+      </OverlayContent>
+    </OverlayRoot>
   );
 }
 
-export default React.memo(SlidePanel);
+export default React.memo(Sheet);
