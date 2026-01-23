@@ -4,7 +4,7 @@ import { HeaderNav } from "./header-nav";
 import { XRAK } from "./header-logo";
 import { RealtimeIsland } from "./realtime-island";
 import { ResponsivePortal } from "@/overlays";
-import { AnimatedThemeToggler } from "@/features/meta/animated-theme-toggler";
+import { AnimatedThemeToggler } from "@/hooks/theme";
 import MenuButton from "@/features/meta/menu";
 
 export function SiteHeader({
