@@ -1,6 +1,6 @@
-import { FullScreenContainer } from "@/components/features/full-screen-container";
-import { BrandLogo } from "@/components/features/meta/brand-logo";
-import { Button } from "@/components/features/meta/button";
+import { FullScreenContainer } from "@/features/full-screen-container";
+import { BrandLogo } from "@/features/meta/brand-logo";
+import { Button } from "@/features/meta/button";
 import RakLink from "@/components/ui/background/Rak_link";
 
 export default function Home() {

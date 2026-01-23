@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { selectMenuOpen, selectSetMenuOpen, useAppStore } from "@/stores";
-import { MenuOverlay, type MenuOverlayProps } from "@/components/ui/overlays";
+import { MenuOverlay, type MenuOverlayProps } from "@/overlays";
 import { menuItems } from "./menu-items";
 
 type SiteMenuProps = {

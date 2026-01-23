@@ -21,7 +21,7 @@ export function OverlayBackdrop({
   return (
     <div
       className={cn(
-        "absolute inset-0 transition-[opacity] duration-sidebar ease-curve-sidebar motion-reduce:transition-none",
+        "absolute inset-0 transition-opacity duration-sidebar ease-curve-sidebar motion-reduce:transition-none",
         visible ? "opacity-100" : "opacity-0",
         className,
       )}
@@ -34,4 +34,3 @@ export function OverlayBackdrop({
     />
   );
 }
-

@@ -6,3 +6,4 @@ node_modules
 vercel.json
 .vercelignore
 .env
+prisma/generated

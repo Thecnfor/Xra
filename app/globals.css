@@ -137,3 +137,40 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+@layer utilities {
+  .xra-header-nav-item {
+    --xra-nav-dur: 620ms;
+    --xra-nav-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-property: opacity, translate, filter;
+    transition-duration: var(--xra-nav-dur);
+    transition-timing-function: var(--xra-nav-ease);
+    will-change: opacity, translate, filter;
+  }
+
+  .xra-header-nav-item[data-xra-state="pre"] {
+    opacity: 0;
+    translate: 0 10px;
+    filter: blur(12px);
+  }
+
+  .xra-header-nav-item[data-xra-state="in"] {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+
+  .xra-header-nav-item[data-xra-state="out"] {
+    --xra-nav-dur: 260ms;
+    --xra-nav-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    translate: 10px 0;
+    filter: blur(12px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xra-header-nav-item {
+      transition: none !important;
+    }
+  }
+}

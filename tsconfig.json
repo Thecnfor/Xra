@@ -26,6 +26,24 @@
       "@/*": [
         "./*"
       ],
+      "@/layout": [
+        "./components/layout"
+      ],
+      "@/layout/*": [
+        "./components/layout/*"
+      ],
+      "@/features": [
+        "./components/features"
+      ],
+      "@/features/*": [
+        "./components/features/*"
+      ],
+      "@/overlays": [
+        "./components/ui/overlays"
+      ],
+      "@/overlays/*": [
+        "./components/ui/overlays/*"
+      ],
       "@/prismaClient": [
         "./prisma/generated/prisma/client"
       ],

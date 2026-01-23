@@ -70,11 +70,11 @@ function MenuOverlay({
       exitMs={exitMs}
       unmountOnClose={unmountOnClose}
       overlayClassName={cn(
-        "bg-gradient-to-b from-foreground/14 via-foreground/7 to-transparent backdrop-blur-xl backdrop-saturate-150 dark:from-black/55 dark:via-black/26 dark:to-transparent",
+        "bg-linear-to-b from-foreground/14 via-foreground/7 to-transparent backdrop-blur-xl backdrop-saturate-150 dark:from-black/55 dark:via-black/26 dark:to-transparent",
         side === "right"
-          ? "bg-gradient-to-l from-foreground/12 via-foreground/6 to-transparent dark:from-black/50 dark:via-black/24"
+          ? "bg-linear-to-l from-foreground/12 via-foreground/6 to-transparent dark:from-black/50 dark:via-black/24"
           : side === "left"
-            ? "bg-gradient-to-r from-foreground/12 via-foreground/6 to-transparent dark:from-black/50 dark:via-black/24"
+            ? "bg-linear-to-r from-foreground/12 via-foreground/6 to-transparent dark:from-black/50 dark:via-black/24"
             : null,
         overlayClassName,
       )}
@@ -96,25 +96,25 @@ function MenuOverlay({
       >
         <div
           className={cn(
-            "absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-foreground/10 to-transparent",
+            "absolute inset-y-0 left-0 w-px bg-linear-to-b from-transparent via-foreground/10 to-transparent",
             side === "right" ? null : "hidden",
           )}
         />
         <div
           className={cn(
-            "absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-foreground/10 to-transparent",
+            "absolute inset-y-0 right-0 w-px bg-linear-to-b from-transparent via-foreground/10 to-transparent",
             side === "left" ? null : "hidden",
           )}
         />
         <div
           className={cn(
-            "absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-foreground/14 to-transparent",
+            "absolute inset-x-10 bottom-0 h-px bg-linear-to-r from-transparent via-foreground/14 to-transparent",
             side === "top" ? null : "hidden",
           )}
         />
         <div
           className={cn(
-            "absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-foreground/14 to-transparent",
+            "absolute inset-x-10 top-0 h-px bg-linear-to-r from-transparent via-foreground/14 to-transparent",
             side === "bottom" ? null : "hidden",
           )}
         />
