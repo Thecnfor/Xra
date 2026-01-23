@@ -6,7 +6,7 @@ import { usePresence } from "@/hooks/overlays";
 
 export type SlidePanelSide = "top" | "right" | "left" | "bottom";
 
-type SlidePanelProps = {
+export type SlidePanelProps = {
   className?: string;
   open: boolean;
   onClose: () => void;
@@ -120,4 +120,3 @@ function SlidePanel({
 }
 
 export default React.memo(SlidePanel);
-
