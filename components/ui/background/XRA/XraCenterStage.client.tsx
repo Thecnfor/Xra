@@ -18,6 +18,8 @@ const blobFragmentShader = `
   precision highp float;
   uniform float uTime;
   uniform float uHover;
+  uniform float uPress;
+  uniform vec3 uColor;
   uniform vec2 uPointer;
   varying vec2 vUv;
 
@@ -50,35 +52,44 @@ const blobFragmentShader = `
   void main() {
     vec2 uv = vUv * 2.0 - 1.0;
     float d = length(uv);
-    float radius = 0.64;
+    float radius = 0.64 + uPress * 0.03;
     float edge = d - radius;
 
     float edgeMask = smoothstep(0.18, 0.02, abs(edge));
 
+    float interaction = clamp(uHover + uPress, 0.0, 1.0);
+    float boost = 1.0 + uPress * 1.25;
+
     vec2 p = uv * 3.2 + vec2(uTime * 0.18, uTime * 0.14);
     float n = fbm(p + uPointer * 0.9);
-    float wobble = (n - 0.5) * 0.16 * uHover * edgeMask;
+    float wobble = (n - 0.5) * 0.16 * interaction * edgeMask * boost;
 
     vec2 dir = normalize(uPointer + vec2(0.0001));
     float alignment = dot(normalize(uv + vec2(0.0001)), dir);
-    float pinch = exp(-pow(1.0 - alignment, 2.0) * 14.0) * clamp(length(uPointer), 0.0, 1.0) * 0.12 * uHover * edgeMask;
+    float pinch = exp(-pow(1.0 - alignment, 2.0) * 14.0) * clamp(length(uPointer), 0.0, 1.0) * 0.12 * interaction * edgeMask * boost;
 
     float e = edge + wobble - pinch;
     float alpha = 1.0 - smoothstep(-0.008, 0.02, e);
-    gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+    gl_FragColor = vec4(uColor, alpha);
   }
 `;
 
 function BlobPlane({
   hover,
+  press,
+  color,
   pointer,
 }: {
   hover: React.MutableRefObject<number>;
+  press: React.MutableRefObject<number>;
+  color: React.MutableRefObject<THREE.Color>;
   pointer: React.MutableRefObject<THREE.Vector2>;
 }) {
   const [uniforms] = useState<Record<string, THREE.IUniform>>(() => ({
     uTime: { value: 0 },
     uHover: { value: 0 },
+    uPress: { value: 0 },
+    uColor: { value: new THREE.Color(0x000000) },
     uPointer: { value: new THREE.Vector2(0, 0) },
   }));
 
@@ -87,6 +98,8 @@ function BlobPlane({
     if (!materialRef.current) return;
     materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
     materialRef.current.uniforms.uHover.value = hover.current;
+    materialRef.current.uniforms.uPress.value = press.current;
+    (materialRef.current.uniforms.uColor.value as THREE.Color).copy(color.current);
     (materialRef.current.uniforms.uPointer.value as THREE.Vector2).copy(pointer.current);
   });
 
@@ -106,14 +119,44 @@ function BlobPlane({
 
 export function XraCenterStage({ className }: { className?: string }) {
   const hover = useRef(0);
+  const press = useRef(0);
+  const color = useRef(new THREE.Color(0x000000));
   const pointer = useRef(new THREE.Vector2(0, 0));
   const hostRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const applyResolved = (resolved: "light" | "dark") => {
+      color.current.set(resolved === "dark" ? 0xffffff : 0x000000);
+    };
+
+    applyResolved(
+      document.documentElement.classList.contains("dark") ? "dark" : "light",
+    );
+
+    const onThemeEvent = (event: Event) => {
+      const detail = (event as CustomEvent<{ resolved?: unknown }>).detail;
+      const resolved = detail?.resolved === "dark" ? "dark" : "light";
+      applyResolved(resolved);
+    };
+
+    window.addEventListener("xra:theme", onThemeEvent);
+    return () => window.removeEventListener("xra:theme", onThemeEvent);
+  }, []);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
 
+    const clickRadius = 0.64;
+    const pressCancelRadius = clickRadius + 0.08;
+    const hoverRadius = 0.58;
+    const hoverFallStart = hoverRadius * 0.8;
+    const longPressMs = 420;
+
+    let hoverTarget = hover.current;
     const setHover = (v: number) => {
+      if (v === hoverTarget) return;
+      hoverTarget = v;
       gsap.to(hover, {
         current: v,
         duration: 0.55,
@@ -121,42 +164,155 @@ export function XraCenterStage({ className }: { className?: string }) {
       });
     };
 
-    const onEnter = () => setHover(1);
+    const normalizePointer = (clientX: number, clientY: number) => {
+      const rect = host.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const r = Math.max(1, Math.min(rect.width, rect.height) / 2);
+      const x = (clientX - cx) / r;
+      const y = (cy - clientY) / r;
+      const len = Math.hypot(x, y);
+      if (len <= 1) return { x, y, len };
+      return { x: x / len, y: y / len, len };
+    };
+
+    let pressArmed = false;
+    let activePointerId: number | null = null;
+    let longPressTimer: number | null = null;
+    let longPressed = false;
+
+    const cancelLongPress = () => {
+      if (longPressTimer == null) return;
+      window.clearTimeout(longPressTimer);
+      longPressTimer = null;
+    };
+
+    const resetPress = () => {
+      pressArmed = false;
+      activePointerId = null;
+      longPressed = false;
+      cancelLongPress();
+      gsap.to(press, { current: 0, duration: 0.45, ease: "power3.out" });
+    };
+
+    const onEnter = (e: PointerEvent) => {
+      if (pressArmed) return;
+      const p = normalizePointer(e.clientX, e.clientY);
+      setHover(p.len <= hoverRadius ? 1 : 0);
+    };
     const onLeave = () => {
+      if (pressArmed) return;
       gsap.to(pointer.current, { x: 0, y: 0, duration: 0.45, ease: "power3.out" });
       setHover(0);
     };
     const onMove = (e: PointerEvent) => {
-      const rect = host.getBoundingClientRect();
-      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      gsap.to(pointer.current, { x: nx * 0.65, y: -ny * 0.65, duration: 0.18, ease: "power2.out" });
+      const p = normalizePointer(e.clientX, e.clientY);
+      if (pressArmed && p.len > pressCancelRadius) {
+        onCancel(e);
+        return;
+      }
+      const hoverActive = pressArmed ? 1 : p.len <= hoverRadius ? 1 : 0;
+      setHover(hoverActive);
+      const edgeFalloff = 1 - THREE.MathUtils.smoothstep(p.len, hoverFallStart, hoverRadius);
+      gsap.to(pointer.current, {
+        x: p.x * 0.56 * edgeFalloff,
+        y: p.y * 0.56 * edgeFalloff,
+        duration: 0.18,
+        ease: "power2.out",
+      });
+    };
+
+    const onDown = (e: PointerEvent) => {
+      const p = normalizePointer(e.clientX, e.clientY);
+      if (p.len > clickRadius) return;
+      e.preventDefault();
+      pressArmed = true;
+      activePointerId = e.pointerId;
+      longPressed = false;
+      setHover(1);
+      host.setPointerCapture(e.pointerId);
+
+      gsap.to(press, { current: 0.55, duration: 0.12, ease: "power2.out" });
+      cancelLongPress();
+      longPressTimer = window.setTimeout(() => {
+        if (!pressArmed) return;
+        longPressed = true;
+        gsap.to(press, { current: 1, duration: 0.18, ease: "power3.out" });
+      }, longPressMs);
+    };
+
+    const onUp = (e: PointerEvent) => {
+      if (!pressArmed) return;
+      if (activePointerId != null && e.pointerId !== activePointerId) return;
+      e.preventDefault();
+      cancelLongPress();
+      if (host.hasPointerCapture(e.pointerId)) {
+        host.releasePointerCapture(e.pointerId);
+      }
+
+      if (longPressed) {
+        resetPress();
+        return;
+      }
+
+      gsap.to(press, {
+        current: 1,
+        duration: 0.08,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(press, { current: 0, duration: 0.5, ease: "power3.out" });
+        },
+      });
+      pressArmed = false;
+      activePointerId = null;
+      longPressed = false;
+    };
+
+    const onCancel = (e: PointerEvent) => {
+      if (!pressArmed) return;
+      if (activePointerId != null && e.pointerId !== activePointerId) return;
+      e.preventDefault();
+      if (host.hasPointerCapture(e.pointerId)) {
+        host.releasePointerCapture(e.pointerId);
+      }
+      resetPress();
+    };
+
+    const onContextMenu = (e: MouseEvent) => {
+      if (!pressArmed) return;
+      e.preventDefault();
     };
 
     host.addEventListener("pointerenter", onEnter);
     host.addEventListener("pointerleave", onLeave);
     host.addEventListener("pointermove", onMove);
+    host.addEventListener("pointerdown", onDown);
+    host.addEventListener("pointerup", onUp);
+    host.addEventListener("pointercancel", onCancel);
+    host.addEventListener("contextmenu", onContextMenu);
 
     return () => {
       host.removeEventListener("pointerenter", onEnter);
       host.removeEventListener("pointerleave", onLeave);
       host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerdown", onDown);
+      host.removeEventListener("pointerup", onUp);
+      host.removeEventListener("pointercancel", onCancel);
+      host.removeEventListener("contextmenu", onContextMenu);
+      resetPress();
     };
   }, []);
 
   return (
     <section className={cn("relative isolate flex w-full items-center justify-center", className)}>
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-[min(84vh,820px)] w-[min(84vw,980px)] bg-[radial-gradient(closest-side_at_50%_48%,rgba(255,255,255,0.92),rgba(255,255,255,0.55)_56%,transparent_74%)]" />
-      </div>
-
       <div className="relative flex items-center justify-center">
         <div
           ref={hostRef}
           className="relative grid place-items-center"
           style={{
-            width: "clamp(240px, 28vw, 380px)",
-            height: "clamp(240px, 28vw, 380px)",
+            width: "clamp(320px, 64vmin, 860px)",
+            height: "clamp(320px, 64vmin, 860px)",
+            touchAction: "none",
           }}
           role="img"
           aria-label="XRAK Studio interactive blob"
@@ -168,7 +324,7 @@ export function XraCenterStage({ className }: { className?: string }) {
             gl={{ alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: "low-power" }}
             className="absolute inset-0"
           >
-            <BlobPlane hover={hover} pointer={pointer} />
+            <BlobPlane hover={hover} press={press} color={color} pointer={pointer} />
           </Canvas>
 
           <h1 className="pointer-events-none relative z-10 select-none text-center text-white mix-blend-difference">

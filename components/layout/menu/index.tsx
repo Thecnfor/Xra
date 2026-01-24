@@ -21,16 +21,11 @@ type SiteMenuProps = {
 export default function SiteMenu({ className, panelProps }: SiteMenuProps) {
   const open = useAppStore(selectMenuOpen);
   const setOpen = useAppStore(selectSetMenuOpen);
-  const [enabled, setEnabled] = React.useState(open);
+  React.useEffect(() => {
+    import("@/overlays");
+  }, []);
 
   const close = React.useCallback(() => setOpen(false), [setOpen]);
-
-  React.useEffect(() => {
-    if (!open) return;
-    setEnabled(true);
-  }, [open]);
-
-  if (!enabled) return null;
 
   return (
     <MenuOverlay
