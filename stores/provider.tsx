@@ -14,7 +14,13 @@ export function AppStoreProvider({
   children: React.ReactNode;
   initState?: AppInitState;
 }) {
-  const [store] = React.useState(() => createAppStore(initState));
+  // 注意：store 只创建一次，后续通过 setState 合并 initState 补丁，避免为了“延迟初始化”而阻断 SSR。
+  const [store] = React.useState<AppStore>(() => createAppStore(initState));
+
+  React.useEffect(() => {
+    if (!initState) return;
+    store.setState(initState);
+  }, [initState, store]);
 
   return (
     <AppStoreContext.Provider value={store}>

@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -5,9 +6,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/layout/header";
 import SiteMenu from "@/layout/menu";
-import { AppStoreProvider } from "@/stores/provider";
-import { ThemeSync } from "@/hooks/theme";
 import { themeInitScript } from "@/lib/theme-init-script";
+import { XraBootShell } from "@/components/layout/XRA";
+import XrakCarrierOverlay from "@/components/layout/XRA/carrier/XrakCarrierOverlay.lazy";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,21 +69,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html
+      lang="zh-CN"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${sourceHanSans.variable}`}
+    >
       <head>
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${sourceHanSans.variable}`}
-      >
-        <AppStoreProvider>
-          <ThemeSync />
-          <SiteHeader />
-          <SiteMenu />
+      <body>
+        <XraBootShell>
+          <div className="xra-invert-on-loading">
+            <SiteHeader />
+            <SiteMenu />
+            <XrakCarrierOverlay />
+          </div>
           {children}
-        </AppStoreProvider>
+        </XraBootShell>
       </body>
     </html>
   );

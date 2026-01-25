@@ -82,6 +82,8 @@
   --sidebar-accent-foreground: oklch(0 0 0);
   --sidebar-border: oklch(0 0 0 / 10%);
   --sidebar-ring: oklch(0 0 0 / 28%);
+  --xra-loading-bg-raw: #000000;
+  --xra-loading-fg-raw: #ffffff;
 }
 
 .dark {
@@ -116,6 +118,8 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(1 0 0 / 28%);
+  --xra-loading-bg-raw: #ffffff;
+  --xra-loading-fg-raw: #000000;
 }
 
 @layer base {
@@ -139,6 +143,41 @@
 }
 
 @layer utilities {
+  .xra-loading-scrim {
+    background: var(--xra-loading-bg-raw);
+  }
+
+  .xra-loading-divider {
+    background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in oklab, var(--xra-loading-fg-raw) 14%, transparent),
+      transparent
+    );
+  }
+
+  .xra-loading-wipe {
+    background: var(--background);
+    clip-path: circle(0% at 50% 50%);
+  }
+
+  html[data-xra-route-loading-phase="enter"] .xra-loading-wipe {
+    animation: xra-loading-wipe-in 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes xra-loading-wipe-in {
+    from {
+      clip-path: circle(180% at 50% 50%);
+    }
+    to {
+      clip-path: circle(0% at 50% 50%);
+    }
+  }
+
+  html[data-xra-route-loading="1"] .xra-invert-on-loading {
+    filter: invert(1);
+  }
+
   .dark .bg-white {
     background-color: var(--background);
   }

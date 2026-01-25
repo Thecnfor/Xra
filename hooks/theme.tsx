@@ -1,27 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { flushSync } from "react-dom";
 
 import { cn } from "@/lib/utils";
+import { setPreference } from "@/lib/storage/indexeddb/client";
 import { shallow, useAppStore } from "@/stores";
 import type { ResolvedTheme, ThemeMode } from "@/stores/slices/theme";
 
-export const THEME_STORAGE_KEY = "theme";
 export const THEME_EVENT_NAME = "xra:theme";
+export const THEME_CURRENT_PREFERENCE_KEY = "theme.current";
+export const THEME_CURRENT_SNAPSHOT_KEY = "xra:theme.current";
+export const THEME_BROWSER_SNAPSHOT_KEY = "xra:theme.browser";
 
-export function normalizeThemeMode(value: unknown): ThemeMode {
-  if (value === "light" || value === "dark" || value === "system") return value;
-  return "system";
+export function normalizeThemeMode(value: unknown): ThemeMode | null {
+  if (value === "light" || value === "dark") return value;
+  return null;
 }
 
-export function readStoredThemeMode(): ThemeMode {
-  try {
-    return normalizeThemeMode(localStorage.getItem(THEME_STORAGE_KEY));
-  } catch {
-    return "system";
-  }
+export function readSystemTheme(): ThemeMode {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function readResolvedThemeFromDom(): ResolvedTheme {
@@ -31,10 +30,7 @@ export function readResolvedThemeFromDom(): ResolvedTheme {
 
 export function applyThemeMode(mode: ThemeMode, { persist }: { persist: boolean }) {
   const root = document.documentElement;
-  const systemResolved = window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-  const resolved = mode === "system" ? systemResolved : mode;
+  const resolved = mode;
 
   root.classList.toggle("dark", resolved === "dark");
   root.classList.toggle("light", resolved === "light");
@@ -43,9 +39,11 @@ export function applyThemeMode(mode: ThemeMode, { persist }: { persist: boolean 
   root.style.colorScheme = resolved;
 
   if (persist) {
+    void setPreference(THEME_CURRENT_PREFERENCE_KEY, mode).catch(() => { });
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, mode);
-    } catch {}
+      localStorage.setItem(THEME_CURRENT_SNAPSHOT_KEY, mode);
+      localStorage.setItem(THEME_BROWSER_SNAPSHOT_KEY, readSystemTheme());
+    } catch { }
   }
 
   window.dispatchEvent(
@@ -61,7 +59,7 @@ export function ThemeSync() {
     const root = document.documentElement;
 
     const syncFromDom = () => {
-      const mode = normalizeThemeMode(root.dataset.themeMode ?? readStoredThemeMode());
+      const mode = normalizeThemeMode(root.dataset.themeMode) ?? readResolvedThemeFromDom();
       const resolved = readResolvedThemeFromDom();
       setTheme(mode);
       setResolvedTheme(resolved);
@@ -71,7 +69,7 @@ export function ThemeSync() {
 
     const onThemeEvent = (event: Event) => {
       const detail = (event as CustomEvent<{ mode?: unknown; resolved?: unknown }>).detail;
-      const mode = normalizeThemeMode(detail?.mode);
+      const mode = normalizeThemeMode(detail?.mode) ?? readResolvedThemeFromDom();
       const resolved = detail?.resolved === "dark" ? "dark" : "light";
       setTheme(mode);
       setResolvedTheme(resolved);
@@ -102,9 +100,7 @@ export const AnimatedThemeToggler = ({
 
   const isDark = resolvedTheme === "dark";
   const nextMode = useMemo<ThemeMode>(() => {
-    if (themeMode === "system") return "light";
-    if (themeMode === "light") return "dark";
-    return "system";
+    return themeMode === "dark" ? "light" : "dark";
   }, [themeMode]);
 
   const toggleTheme = useCallback(async () => {
@@ -118,7 +114,7 @@ export const AnimatedThemeToggler = ({
       !prefersReducedMotion &&
       "startViewTransition" in document &&
       typeof (document as Document & { startViewTransition?: unknown }).startViewTransition ===
-        "function";
+      "function";
 
     const apply = () => applyThemeMode(nextMode, { persist: true });
 
@@ -162,11 +158,10 @@ export const AnimatedThemeToggler = ({
       className={cn(className)}
       {...props}
     >
-      {themeMode === "system" ? <Monitor /> : isDark ? <Sun /> : <Moon />}
+      {isDark ? <Sun /> : <Moon />}
       <span className="sr-only">
-        切换主题（当前：{themeMode === "system" ? "跟随系统" : isDark ? "深色" : "浅色"}）
+        切换主题（当前：{isDark ? "深色" : "浅色"}）
       </span>
     </button>
   );
 };
-

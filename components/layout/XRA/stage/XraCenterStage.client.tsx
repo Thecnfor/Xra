@@ -1,94 +1,31 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
-
-const blobVertexShader = `
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
-const blobFragmentShader = `
-  precision highp float;
-  uniform float uTime;
-  uniform float uHover;
-  uniform float uPress;
-  uniform vec3 uColor;
-  uniform vec2 uPointer;
-  varying vec2 vUv;
-
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-  }
-
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-  }
-
-  float fbm(vec2 p) {
-    float v = 0.0;
-    float a = 0.5;
-    for (int i = 0; i < 4; i++) {
-      v += a * noise(p);
-      p *= 2.0;
-      a *= 0.5;
-    }
-    return v;
-  }
-
-  void main() {
-    vec2 uv = vUv * 2.0 - 1.0;
-    float d = length(uv);
-    float radius = 0.64 + uPress * 0.03;
-    float edge = d - radius;
-
-    float edgeMask = smoothstep(0.18, 0.02, abs(edge));
-
-    float interaction = clamp(uHover + uPress, 0.0, 1.0);
-    float boost = 1.0 + uPress * 1.25;
-
-    vec2 p = uv * 3.2 + vec2(uTime * 0.18, uTime * 0.14);
-    float n = fbm(p + uPointer * 0.9);
-    float wobble = (n - 0.5) * 0.16 * interaction * edgeMask * boost;
-
-    vec2 dir = normalize(uPointer + vec2(0.0001));
-    float alignment = dot(normalize(uv + vec2(0.0001)), dir);
-    float pinch = exp(-pow(1.0 - alignment, 2.0) * 14.0) * clamp(length(uPointer), 0.0, 1.0) * 0.12 * interaction * edgeMask * boost;
-
-    float e = edge + wobble - pinch;
-    float alpha = 1.0 - smoothstep(-0.008, 0.02, e);
-    gl_FragColor = vec4(uColor, alpha);
-  }
-`;
+import { useWebglContextRecovery } from "./hooks/use-webgl-context-recovery";
+import { blobFragmentShader, blobVertexShader } from "./shaders/blob";
 
 function BlobPlane({
   hover,
   press,
   color,
   pointer,
+  radius,
 }: {
   hover: React.MutableRefObject<number>;
   press: React.MutableRefObject<number>;
   color: React.MutableRefObject<THREE.Color>;
   pointer: React.MutableRefObject<THREE.Vector2>;
+  radius: React.MutableRefObject<number>;
 }) {
   const [uniforms] = useState<Record<string, THREE.IUniform>>(() => ({
     uTime: { value: 0 },
     uHover: { value: 0 },
     uPress: { value: 0 },
+    uRadius: { value: 0.64 },
     uColor: { value: new THREE.Color(0x000000) },
     uPointer: { value: new THREE.Vector2(0, 0) },
   }));
@@ -99,6 +36,7 @@ function BlobPlane({
     materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
     materialRef.current.uniforms.uHover.value = hover.current;
     materialRef.current.uniforms.uPress.value = press.current;
+    materialRef.current.uniforms.uRadius.value = radius.current;
     (materialRef.current.uniforms.uColor.value as THREE.Color).copy(color.current);
     (materialRef.current.uniforms.uPointer.value as THREE.Vector2).copy(pointer.current);
   });
@@ -117,21 +55,123 @@ function BlobPlane({
   );
 }
 
-export function XraCenterStage({ className }: { className?: string }) {
+export type XraCenterStageProps = {
+  className?: string;
+  ariaLabel?: string;
+  forceHover?: boolean;
+  baseRadius?: number;
+  onActivate?: () => void;
+  onLongPress?: () => void;
+};
+
+export function XraCenterStage({
+  className,
+  ariaLabel = "XRak interactive blob",
+  forceHover = false,
+  baseRadius = 0.64,
+  onActivate,
+  onLongPress,
+}: XraCenterStageProps) {
+  const [canvasKey, setCanvasKey] = useState(0);
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const hover = useRef(0);
   const press = useRef(0);
+  const radius = useRef(baseRadius);
   const color = useRef(new THREE.Color(0x000000));
   const pointer = useRef(new THREE.Vector2(0, 0));
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const onActivateRef = useRef(onActivate);
+  const onLongPressRef = useRef(onLongPress);
+  const forceHoverRef = useRef(forceHover);
+  const healRef = useRef({ windowStartMs: 0, attempts: 0 });
+  const bumpCanvasKey = useCallback(() => setCanvasKey((k) => k + 1), []);
+
+  useEffect(() => {
+    onActivateRef.current = onActivate;
+    onLongPressRef.current = onLongPress;
+  }, [onActivate, onLongPress]);
+
+  useEffect(() => {
+    forceHoverRef.current = forceHover;
+    if (forceHover) {
+      hover.current = 1;
+    }
+  }, [forceHover]);
+
+  useEffect(() => {
+    radius.current = baseRadius;
+  }, [baseRadius]);
+
+  useWebglContextRecovery(canvasEl, bumpCanvasKey);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host || !canvasEl) return;
+
+    const measureAndHeal = () => {
+      const width = Math.max(0, Math.round(host.offsetWidth));
+      const height = Math.max(0, Math.round(host.offsetHeight));
+      if (width === 0 || height === 0) return;
+
+      const deviceDpr = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
+      const effectiveDpr = Math.min(1.5, Math.max(1, deviceDpr));
+      const expectedWidth = Math.max(1, Math.round(width * effectiveDpr));
+      const expectedHeight = Math.max(1, Math.round(height * effectiveDpr));
+
+      const cw = canvasEl.width || 0;
+      const ch = canvasEl.height || 0;
+
+      const tooSmall =
+        cw < 32 ||
+        ch < 32 ||
+        cw < expectedWidth * 0.55 ||
+        ch < expectedHeight * 0.55;
+      const tooLarge = cw > expectedWidth * 1.9 || ch > expectedHeight * 1.9;
+      if (!tooSmall && !tooLarge) return;
+
+      const now = performance.now();
+      const state = healRef.current;
+      if (now - state.windowStartMs > 2000) {
+        state.windowStartMs = now;
+        state.attempts = 0;
+      }
+      if (state.attempts >= 3) return;
+      state.attempts += 1;
+      bumpCanvasKey();
+    };
+
+    const schedule = () => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(measureAndHeal);
+      });
+    };
+
+    const onResize = () => schedule();
+    const onOrientationChange = () => schedule();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") schedule();
+    };
+
+    schedule();
+    window.addEventListener("resize", onResize);
+    window.visualViewport?.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onOrientationChange);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.visualViewport?.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onOrientationChange);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [bumpCanvasKey, canvasEl]);
 
   useEffect(() => {
     const applyResolved = (resolved: "light" | "dark") => {
       color.current.set(resolved === "dark" ? 0xffffff : 0x000000);
     };
 
-    applyResolved(
-      document.documentElement.classList.contains("dark") ? "dark" : "light",
-    );
+    applyResolved(document.documentElement.classList.contains("dark") ? "dark" : "light");
 
     const onThemeEvent = (event: Event) => {
       const detail = (event as CustomEvent<{ resolved?: unknown }>).detail;
@@ -147,10 +187,13 @@ export function XraCenterStage({ className }: { className?: string }) {
     const host = hostRef.current;
     if (!host) return;
 
-    const clickRadius = 0.64;
-    const pressCancelRadius = clickRadius + 0.08;
-    const hoverRadius = 0.58;
-    const hoverFallStart = hoverRadius * 0.8;
+    const getRadii = () => {
+      const clickRadius = Math.max(0.52, Math.min(0.82, radius.current));
+      const pressCancelRadius = clickRadius + 0.08;
+      const hoverRadius = Math.max(0.46, clickRadius - 0.06);
+      const hoverFallStart = hoverRadius * 0.8;
+      return { clickRadius, pressCancelRadius, hoverRadius, hoverFallStart };
+    };
     const longPressMs = 420;
 
     let hoverTarget = hover.current;
@@ -163,6 +206,11 @@ export function XraCenterStage({ className }: { className?: string }) {
         ease: v > hover.current ? "power3.out" : "power3.inOut",
       });
     };
+
+    if (forceHoverRef.current) {
+      hover.current = 1;
+      hoverTarget = 1;
+    }
 
     const normalizePointer = (clientX: number, clientY: number) => {
       const rect = host.getBoundingClientRect();
@@ -198,20 +246,22 @@ export function XraCenterStage({ className }: { className?: string }) {
     const onEnter = (e: PointerEvent) => {
       if (pressArmed) return;
       const p = normalizePointer(e.clientX, e.clientY);
-      setHover(p.len <= hoverRadius ? 1 : 0);
+      const { hoverRadius } = getRadii();
+      setHover(forceHoverRef.current ? 1 : p.len <= hoverRadius ? 1 : 0);
     };
     const onLeave = () => {
       if (pressArmed) return;
       gsap.to(pointer.current, { x: 0, y: 0, duration: 0.45, ease: "power3.out" });
-      setHover(0);
+      setHover(forceHoverRef.current ? 1 : 0);
     };
     const onMove = (e: PointerEvent) => {
       const p = normalizePointer(e.clientX, e.clientY);
+      const { pressCancelRadius, hoverRadius, hoverFallStart } = getRadii();
       if (pressArmed && p.len > pressCancelRadius) {
         onCancel(e);
         return;
       }
-      const hoverActive = pressArmed ? 1 : p.len <= hoverRadius ? 1 : 0;
+      const hoverActive = forceHoverRef.current ? 1 : pressArmed ? 1 : p.len <= hoverRadius ? 1 : 0;
       setHover(hoverActive);
       const edgeFalloff = 1 - THREE.MathUtils.smoothstep(p.len, hoverFallStart, hoverRadius);
       gsap.to(pointer.current, {
@@ -224,6 +274,7 @@ export function XraCenterStage({ className }: { className?: string }) {
 
     const onDown = (e: PointerEvent) => {
       const p = normalizePointer(e.clientX, e.clientY);
+      const { clickRadius } = getRadii();
       if (p.len > clickRadius) return;
       e.preventDefault();
       pressArmed = true;
@@ -238,6 +289,7 @@ export function XraCenterStage({ className }: { className?: string }) {
         if (!pressArmed) return;
         longPressed = true;
         gsap.to(press, { current: 1, duration: 0.18, ease: "power3.out" });
+        onLongPressRef.current?.();
       }, longPressMs);
     };
 
@@ -255,6 +307,7 @@ export function XraCenterStage({ className }: { className?: string }) {
         return;
       }
 
+      onActivateRef.current?.();
       gsap.to(press, {
         current: 1,
         duration: 0.08,
@@ -304,37 +357,39 @@ export function XraCenterStage({ className }: { className?: string }) {
   }, []);
 
   return (
-    <section className={cn("relative isolate flex w-full items-center justify-center", className)}>
+    <section className={cn("relative isolate flex items-center justify-center", className)}>
       <div className="relative flex items-center justify-center">
         <div
           ref={hostRef}
-          className="relative grid place-items-center"
+          className={cn("relative grid place-items-center rounded-full overflow-hidden")}
           style={{
-            width: "clamp(320px, 64vmin, 860px)",
-            height: "clamp(320px, 64vmin, 860px)",
+            width: "clamp(320px, 60vmin, 720px)",
+            height: "clamp(320px, 60vmin, 720px)",
             touchAction: "none",
           }}
-          role="img"
-          aria-label="XRAK Studio interactive blob"
+          role="button"
+          tabIndex={0}
+          aria-label={ariaLabel}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            onActivateRef.current?.();
+          }}
         >
           <Canvas
+            key={canvasKey}
             orthographic
             dpr={[1, 1.5]}
             camera={{ position: [0, 0, 2], zoom: 120 }}
-            gl={{ alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: "low-power" }}
+            gl={{ alpha: true, antialias: true, premultipliedAlpha: false, powerPreference: "low-power" }}
             className="absolute inset-0"
+            onCreated={({ gl }) => {
+              gl.setClearColor(0x000000, 0);
+              setCanvasEl(gl.domElement);
+            }}
           >
-            <BlobPlane hover={hover} press={press} color={color} pointer={pointer} />
+            <BlobPlane hover={hover} press={press} radius={radius} color={color} pointer={pointer} />
           </Canvas>
-
-          <h1 className="pointer-events-none relative z-10 select-none text-center text-white mix-blend-difference">
-            <span className="block font-semibold leading-[0.86] tracking-[-0.06em] text-[clamp(52px,7.4vw,96px)] translate-x-[-0.06em]">
-              XRAK
-            </span>
-            <span className="block font-medium uppercase leading-none tracking-[0.34em] text-[clamp(20px,2.3vw,30px)] translate-x-[0.12em] mt-2">
-              Studio
-            </span>
-          </h1>
         </div>
       </div>
     </section>

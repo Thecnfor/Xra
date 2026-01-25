@@ -1,7 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { selectMenuOpen, selectSetMenuOpen, useAppStore } from "@/stores";
+import {
+  selectAnySidePanelOpen,
+  selectCloseSidePanel,
+  selectOpenSidePanel,
+  selectSidePanelActiveId,
+  useAppStore,
+} from "@/stores";
 
 interface MenuButtonProps {
   className?: string;
@@ -10,23 +16,34 @@ interface MenuButtonProps {
 }
 
 const MenuButton = ({ className, checked, onChange }: MenuButtonProps) => {
-  const menuOpen = useAppStore(selectMenuOpen);
-  const setMenuOpen = useAppStore(selectSetMenuOpen);
+  const anySidePanelOpen = useAppStore(selectAnySidePanelOpen);
+  const sidePanelActiveId = useAppStore(selectSidePanelActiveId);
+  const openSidePanel = useAppStore(selectOpenSidePanel);
+  const closeSidePanel = useAppStore(selectCloseSidePanel);
 
-  const resolvedChecked = checked ?? menuOpen;
-  const resolvedOnChange = onChange ?? setMenuOpen;
+  const resolvedChecked = checked ?? anySidePanelOpen;
 
   return (
     <button
       type="button"
-      aria-label={resolvedChecked ? "关闭菜单" : "打开菜单"}
+      aria-label={resolvedChecked ? "关闭面板" : "打开菜单"}
       aria-pressed={resolvedChecked}
       className={cn(
         "group relative inline-flex h-11 w-11 select-none items-center justify-center rounded-full border border-transparent bg-transparent text-foreground/80 backdrop-blur-none transition-colors duration-300 ease-out hover:bg-foreground/6 hover:text-foreground cursor-pointer focus-ring",
         resolvedChecked ? "border-border/60 bg-background/40 backdrop-blur-sm" : null,
         className,
       )}
-      onClick={() => resolvedOnChange(!resolvedChecked)}
+      onClick={() => {
+        if (onChange) {
+          onChange(!resolvedChecked);
+          return;
+        }
+        if (sidePanelActiveId) {
+          closeSidePanel();
+          return;
+        }
+        openSidePanel("menu");
+      }}
     >
       <svg
         viewBox="0 0 32 32"

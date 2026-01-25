@@ -1,10 +1,10 @@
 import type { StoreApi } from "zustand/vanilla";
 
-export type ThemeMode = "light" | "dark" | "system";
+export type ThemeMode = "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
 
 export interface ThemeSlice {
-  theme: "light" | "dark" | "system";
+  theme: ThemeMode;
   resolvedTheme: ResolvedTheme;
   setTheme: (theme: ThemeMode) => void;
   setResolvedTheme: (resolvedTheme: ResolvedTheme) => void;
@@ -18,7 +18,7 @@ export function createThemeSlice<T extends ThemeSlice>(
   init?: ThemeSliceInit,
 ): ThemeSlice {
   return {
-    theme: init?.theme ?? "system",
+    theme: init?.theme ?? "light",
     resolvedTheme: init?.resolvedTheme ?? "light",
     setTheme: (theme) => set({ theme } as Partial<T>),
     setResolvedTheme: (resolvedTheme) =>

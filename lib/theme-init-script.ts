@@ -1,47 +1,58 @@
 export const themeInitScript = `(() => {
-  const storageKey = "theme";
   const eventName = "xra:theme";
   const root = document.documentElement;
   const mql = window.matchMedia("(prefers-color-scheme: dark)");
-  const normalizeMode = (value) =>
-    value === "light" || value === "dark" || value === "system" ? value : "system";
-  const getSystemResolved = () => (mql.matches ? "dark" : "light");
-  const applyResolved = (resolved, mode) => {
-    root.classList.toggle("dark", resolved === "dark");
-    root.classList.toggle("light", resolved === "light");
-    root.dataset.themeMode = mode;
-    root.dataset.themeResolved = resolved;
-    root.style.colorScheme = resolved;
+  const normalizeTheme = (value) => (value === "light" || value === "dark" ? value : null);
+  const getSystemTheme = () => (mql.matches ? "dark" : "light");
+  const applyTheme = (theme) => {
+    root.classList.toggle("dark", theme === "dark");
+    root.classList.toggle("light", theme === "light");
+    root.dataset.themeMode = theme;
+    root.dataset.themeResolved = theme;
+    root.style.colorScheme = theme;
     try {
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { mode, resolved } }));
+      window.dispatchEvent(
+        new CustomEvent(eventName, { detail: { mode: theme, resolved: theme } }),
+      );
     } catch {}
   };
-  const readStoredMode = () => {
+
+  const lsBrowserThemeKey = "xra:theme.browser";
+  const lsCurrentThemeKey = "xra:theme.current";
+
+  const readLs = (key) => {
     try {
-      return normalizeMode(localStorage.getItem(storageKey));
+      return localStorage.getItem(key);
     } catch {
-      return "system";
+      return null;
     }
   };
-  const applyMode = (mode) => {
-    const resolved = mode === "system" ? getSystemResolved() : mode;
-    applyResolved(resolved, mode);
+
+  const writeLs = (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch {}
   };
 
-  applyMode(readStoredMode());
-
-  const onSystemChange = () => {
-    const mode = readStoredMode();
-    if (mode !== "system") return;
-    applyMode("system");
+  const removeLs = (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch {}
   };
 
-  if (mql.addEventListener) mql.addEventListener("change", onSystemChange);
-  else mql.addListener(onSystemChange);
+  const systemTheme = getSystemTheme();
 
-  window.addEventListener("storage", (e) => {
-    if (e.key !== storageKey) return;
-    applyMode(normalizeMode(e.newValue));
-  });
+  const snapshotBrowserTheme = normalizeTheme(readLs(lsBrowserThemeKey));
+  const snapshotCurrentTheme = normalizeTheme(readLs(lsCurrentThemeKey));
+
+  let bootTheme = systemTheme;
+  if (snapshotBrowserTheme && snapshotBrowserTheme !== systemTheme) {
+    bootTheme = systemTheme;
+    writeLs(lsBrowserThemeKey, systemTheme);
+    writeLs(lsCurrentThemeKey, systemTheme);
+  } else if (snapshotCurrentTheme) {
+    bootTheme = snapshotCurrentTheme;
+  }
+
+  applyTheme(bootTheme);
 })();`;
-

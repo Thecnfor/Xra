@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/provider";
-import { selectMenuOpen } from "@/stores/selectors";
+import { selectAnySidePanelOpen } from "@/stores/selectors";
 import { getHeaderNavItemsForPathname, type HeaderNavItem } from "./nav-items";
 
 export type HeaderNavProps = {
@@ -16,7 +16,7 @@ export type HeaderNavProps = {
 export function HeaderNav({ items, className }: HeaderNavProps) {
     const pathname = usePathname();
     const resolvedItems = items ?? getHeaderNavItemsForPathname(pathname);
-    const menuOpen = useAppStore(selectMenuOpen);
+    const panelOpen = useAppStore(selectAnySidePanelOpen);
     const [ready, setReady] = React.useState(false);
 
     React.useEffect(() => {
@@ -31,28 +31,28 @@ export function HeaderNav({ items, className }: HeaderNavProps) {
     return (
         <nav
             aria-label="主导航"
-            aria-hidden={menuOpen}
-            className={cn("flex items-center", menuOpen && "pointer-events-none", className)}
+            aria-hidden={panelOpen}
+            className={cn("flex items-center", panelOpen && "pointer-events-none", className)}
         >
-            <ul className="flex items-center gap-5">
+            <ul className="flex items-center gap-4 min-[760px]:gap-5">
                 {resolvedItems.map((item, index) => (
                     <li key={item.href}>
                         <Link
                             href={item.href}
-                            tabIndex={menuOpen ? -1 : undefined}
-                            data-xra-state={menuOpen ? "out" : ready ? "in" : "pre"}
+                            tabIndex={panelOpen ? -1 : undefined}
+                            data-xra-state={panelOpen ? "out" : ready ? "in" : "pre"}
                             className={cn(
-                                "group relative inline-flex h-11 items-center rounded-full px-2.5 text-[13px] font-medium tracking-[0.16em]",
+                                "group relative inline-flex h-11 items-center rounded-full px-2 min-[760px]:px-2.5 text-[13px] font-medium tracking-[0.16em]",
                                 "text-foreground/60 transition-colors duration-500 ease-out hover:text-foreground focus-ring",
                                 "xra-header-nav-item",
                             )}
                             style={{
-                                transitionDelay: menuOpen
+                                transitionDelay: panelOpen
                                     ? `${(count - 1 - index) * 55}ms`
                                     : `${120 + index * 70}ms`,
                             }}
                         >
-                            <span className="pointer-events-none absolute inset-x-2.5 -bottom-0.5 h-px bg-linear-to-r from-transparent via-foreground/22 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100" />
+                            <span className="pointer-events-none absolute inset-x-2 -bottom-0.5 h-px bg-linear-to-r from-transparent via-foreground/22 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 min-[760px]:inset-x-2.5" />
                             {item.label}
                         </Link>
                     </li>

@@ -3,9 +3,24 @@ import type { AppState } from "./store";
 export const selectTheme = (state: AppState) => state.theme;
 export const selectSetTheme = (state: AppState) => state.setTheme;
 
-export const selectMenuOpen = (state: AppState) => state.menuOpen;
-export const selectSetMenuOpen = (state: AppState) => state.setMenuOpen;
-export const selectToggleMenuOpen = (state: AppState) => state.toggleMenuOpen;
+export const selectSidePanelActiveId = (state: AppState) => state.sidePanelActiveId;
+export const selectOpenSidePanel = (state: AppState) => state.openSidePanel;
+export const selectCloseSidePanel = (state: AppState) => state.closeSidePanel;
+export const selectToggleSidePanel = (state: AppState) => state.toggleSidePanel;
+export const selectAnySidePanelOpen = (state: AppState) => state.sidePanelActiveId != null;
+
+export const selectIsRouteLoading = (state: AppState) => state.isRouteLoading;
+export const selectSetRouteLoading = (state: AppState) => state.setRouteLoading;
+
+export const selectMenuOpen = (state: AppState) => state.sidePanelActiveId === "menu";
+export const selectSetMenuOpen = (state: AppState) => (open: boolean) => {
+  if (open) state.openSidePanel("menu");
+  else state.closeSidePanel();
+};
+export const selectToggleMenuOpen = (state: AppState) => () => state.toggleSidePanel("menu");
+
+export const selectChatOpen = (state: AppState) => state.sidePanelActiveId === "chat";
+export const selectOpenChat = (state: AppState) => () => state.openSidePanel("chat");
 
 export const selectIslandMessages = (state: AppState) => state.islandMessages;
 export const selectIslandActiveId = (state: AppState) => state.islandActiveId;

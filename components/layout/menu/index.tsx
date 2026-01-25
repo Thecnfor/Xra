@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { selectMenuOpen, selectSetMenuOpen, useAppStore } from "@/stores";
+import { selectMenuOpen, selectCloseSidePanel, useAppStore } from "@/stores";
 import type { MenuOverlayProps } from "@/overlays";
 import { menuItems } from "./menu-items";
 
@@ -20,12 +20,12 @@ type SiteMenuProps = {
 
 export default function SiteMenu({ className, panelProps }: SiteMenuProps) {
   const open = useAppStore(selectMenuOpen);
-  const setOpen = useAppStore(selectSetMenuOpen);
+  const closeSidePanel = useAppStore(selectCloseSidePanel);
   React.useEffect(() => {
     import("@/overlays");
   }, []);
 
-  const close = React.useCallback(() => setOpen(false), [setOpen]);
+  const close = React.useCallback(() => closeSidePanel(), [closeSidePanel]);
 
   return (
     <MenuOverlay
