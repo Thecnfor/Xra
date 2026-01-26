@@ -45,24 +45,24 @@ export const blobFragmentShader = `
   void main() {
     vec2 uv = vUv * 2.0 - 1.0;
     float d = length(uv);
-    float radius = uRadius + uPress * 0.03;
+    float radius = min(0.96, uRadius + uPress * 0.18);
     float edge = d - radius;
 
     float edgeMask = smoothstep(0.18, 0.02, abs(edge));
 
-    float interaction = clamp(uHover + uPress, 0.0, 1.0);
-    float boost = 1.0 + uPress * 1.25;
+    float interaction = clamp(uHover, 0.0, 1.0);
+    float boost = 1.0 + uHover * 1.1;
 
     vec2 p = uv * 3.2 + vec2(uTime * 0.18, uTime * 0.14);
     float n = fbm(p + uPointer * 0.9);
-    float wobble = (n - 0.5) * 0.16 * interaction * edgeMask * boost;
+    float wobble = (n - 0.5) * 0.23 * interaction * edgeMask * boost;
 
     vec2 dir = normalize(uPointer + vec2(0.0001));
     float alignment = dot(normalize(uv + vec2(0.0001)), dir);
     float pinch = exp(-pow(1.0 - alignment, 2.0) * 14.0) * clamp(length(uPointer), 0.0, 1.0) * 0.12 * interaction * edgeMask * boost;
 
     float e = edge + wobble - pinch;
-    float alpha = 1.0 - smoothstep(-0.008, 0.02, e);
+    float alpha = 1.0 - smoothstep(-0.006, 0.016, e);
     gl_FragColor = vec4(uColor, alpha);
   }
 `;

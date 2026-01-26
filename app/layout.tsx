@@ -1,6 +1,5 @@
 import * as React from "react";
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -75,18 +74,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${sourceHanSans.variable}`}
     >
       <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeInitScript}
-        </Script>
+        <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         <XraBootShell>
           <div className="xra-invert-on-loading">
             <SiteHeader />
             <SiteMenu />
-            <XrakCarrierOverlay />
+            {children}
           </div>
-          {children}
+          <XrakCarrierOverlay />
         </XraBootShell>
       </body>
     </html>

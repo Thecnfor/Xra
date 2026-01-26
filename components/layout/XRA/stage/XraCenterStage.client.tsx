@@ -60,6 +60,9 @@ export type XraCenterStageProps = {
   ariaLabel?: string;
   forceHover?: boolean;
   baseRadius?: number;
+  pressDrive?: number;
+  voiceEventName?: string;
+  size?: string;
   onActivate?: () => void;
   onLongPress?: () => void;
 };
@@ -69,6 +72,9 @@ export function XraCenterStage({
   ariaLabel = "XRak interactive blob",
   forceHover = false,
   baseRadius = 0.64,
+  pressDrive,
+  voiceEventName,
+  size = "clamp(320px, 60vmin, 720px)",
   onActivate,
   onLongPress,
 }: XraCenterStageProps) {
@@ -95,12 +101,40 @@ export function XraCenterStage({
     forceHoverRef.current = forceHover;
     if (forceHover) {
       hover.current = 1;
+      return;
+    }
+    const host = hostRef.current;
+    const isHovered = host ? host.matches(":hover") : false;
+    if (!isHovered) {
+      gsap.to(hover, { current: 0, duration: 0.45, ease: "power3.out", overwrite: true });
     }
   }, [forceHover]);
 
   useEffect(() => {
     radius.current = baseRadius;
   }, [baseRadius]);
+
+  useEffect(() => {
+    if (pressDrive == null) return;
+    const v = Math.max(0, Math.min(1, pressDrive));
+    const duration = v >= press.current ? 0.14 : 0.42;
+    gsap.to(press, { current: v, duration, ease: "power3.out", overwrite: true });
+  }, [pressDrive]);
+
+  useEffect(() => {
+    if (!voiceEventName) return;
+    const state = { last: press.current };
+    const onVoice = (event: Event) => {
+      const detail = (event as CustomEvent<{ energy?: unknown }>).detail;
+      const energy = typeof detail?.energy === "number" ? detail.energy : 0;
+      const v = Math.max(0, Math.min(1, energy * 1.35));
+      const duration = v >= state.last ? 0.18 : 0.55;
+      state.last = v;
+      gsap.to(press, { current: v, duration, ease: "power3.out", overwrite: true });
+    };
+    window.addEventListener(voiceEventName, onVoice as EventListener);
+    return () => window.removeEventListener(voiceEventName, onVoice as EventListener);
+  }, [voiceEventName]);
 
   useWebglContextRecovery(canvasEl, bumpCanvasKey);
 
@@ -363,8 +397,8 @@ export function XraCenterStage({
           ref={hostRef}
           className={cn("relative grid place-items-center rounded-full overflow-hidden")}
           style={{
-            width: "clamp(320px, 60vmin, 720px)",
-            height: "clamp(320px, 60vmin, 720px)",
+            width: size,
+            height: size,
             touchAction: "none",
           }}
           role="button"
