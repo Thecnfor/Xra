@@ -23,7 +23,7 @@ export function XRAK({ className, href = "/", priority = true }: XRAKProps) {
         height={33.15}
         priority={priority}
         sizes="61px"
-        className="h-[1.16rem] w-auto select-none dark:invert"
+        className="xra-header-logo h-[1.16rem] w-auto select-none dark:invert"
         draggable={false}
       />
     </Link>

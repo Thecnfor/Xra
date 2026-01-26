@@ -47,7 +47,7 @@ function useBubbleHint(): BubbleHintState {
   return { open, hint: BUBBLE_HINTS[hintIndex] ?? BUBBLE_HINTS[0] ?? "" };
 }
 
-const STAGE_SIZE = "clamp(320px, 60vmin, 720px)";
+const STAGE_SIZE = "var(--xra-home-stage-size, clamp(320px, 60vmin, 720px))";
 const BUBBLE_ANCHOR_STYLE = { width: 0, height: 0, "--stage-size": STAGE_SIZE } as React.CSSProperties;
 
 export function CallToAction({ prefersReducedMotion }: { prefersReducedMotion: boolean }) {
@@ -58,7 +58,7 @@ export function CallToAction({ prefersReducedMotion }: { prefersReducedMotion: b
     return (
       <div
         aria-hidden="true"
-        className="fixed left-0 right-0 z-[80] top-[calc(env(safe-area-inset-top)+4.25rem)] pointer-events-none px-4"
+        className="fixed left-0 right-0 z-80 top-[calc(env(safe-area-inset-top)+4.25rem)] pointer-events-none px-4"
       >
         <div className={["flex justify-center", prefersReducedMotion ? "" : "animate-[xra-float_6.8s_ease-in-out_infinite]"].join(" ")}>
           <AnimatePresence initial={false}>
@@ -85,7 +85,7 @@ export function CallToAction({ prefersReducedMotion }: { prefersReducedMotion: b
   return (
     <div
       aria-hidden="true"
-      className="fixed left-1/2 top-1/2 z-[75] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+      className="fixed left-1/2 top-1/2 z-75 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
       style={BUBBLE_ANCHOR_STYLE}
     >
       <div

@@ -16,7 +16,7 @@ const SUBTITLE_SCRIPT: readonly string[] = [
   "按住 Xra：打开聊天；轻触：唤醒。",
 ];
 
-const STAGE_SIZE = "clamp(320px, 60vmin, 720px)";
+const STAGE_SIZE = "var(--xra-home-stage-size, clamp(320px, 60vmin, 720px))";
 
 export function HeroSection() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -28,16 +28,16 @@ export function HeroSection() {
     <>
       <div
         aria-hidden="true"
-        className="fixed inset-0 z-[20] pointer-events-none"
+        className="fixed inset-0 z-20 pointer-events-none"
         style={{
           background:
-            "radial-gradient(80vmax 60vmax at 50% var(--xra-home-stage-y, 46%), rgba(127,127,127,0.06), transparent 60%)",
+            "radial-gradient(80vmax 60vmax at 50% var(--xra-home-stage-y, 50dvh), rgba(127,127,127,0.06), transparent 60%)",
         }}
       />
 
       <div
         aria-hidden="true"
-        className="fixed left-1/2 z-[40] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        className="fixed left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
         style={{ width: STAGE_SIZE, height: STAGE_SIZE, top: "var(--xra-home-stage-y, 50dvh)" }}
       >
         <div
@@ -64,7 +64,7 @@ export function HeroSection() {
       </div>
 
       {isDesktop ? (
-        <div className="relative z-[30] mx-auto flex w-full max-w-[1400px] flex-1 items-stretch">
+        <div className="relative z-30 mx-auto flex w-full max-w-[1400px] flex-1 items-stretch">
           <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-[minmax(260px,420px)_1fr_minmax(220px,420px)]">
             <aside className="relative">
               <FeatureGrid

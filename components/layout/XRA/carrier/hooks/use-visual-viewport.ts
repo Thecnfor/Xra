@@ -8,7 +8,7 @@ function getVisualViewportSize() {
 }
 
 export function useVisualViewport() {
-  const [viewport, setViewport] = React.useState(getVisualViewportSize);
+  const [viewport, setViewport] = React.useState(() => ({ width: 0, height: 0 }));
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;

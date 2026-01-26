@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
@@ -59,10 +59,12 @@ export type XraCenterStageProps = {
   className?: string;
   ariaLabel?: string;
   forceHover?: boolean;
+  interactive?: boolean;
   baseRadius?: number;
   pressDrive?: number;
   voiceEventName?: string;
   size?: string;
+  colorRole?: "foreground" | "background";
   onActivate?: () => void;
   onLongPress?: () => void;
 };
@@ -71,15 +73,19 @@ export function XraCenterStage({
   className,
   ariaLabel = "XRak interactive blob",
   forceHover = false,
+  interactive = true,
   baseRadius = 0.64,
   pressDrive,
   voiceEventName,
   size = "clamp(320px, 60vmin, 720px)",
+  colorRole = "foreground",
   onActivate,
   onLongPress,
 }: XraCenterStageProps) {
   const [canvasKey, setCanvasKey] = useState(0);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const orthoCameraRef = useRef<THREE.OrthographicCamera | null>(null);
+  const updateCameraRef = useRef<() => void>(() => { });
   const hover = useRef(0);
   const press = useRef(0);
   const radius = useRef(baseRadius);
@@ -137,6 +143,51 @@ export function XraCenterStage({
   }, [voiceEventName]);
 
   useWebglContextRecovery(canvasEl, bumpCanvasKey);
+
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const updateCamera = () => {
+      const camera = orthoCameraRef.current;
+      if (!camera) return;
+      const minDim = Math.max(1, Math.min(host.offsetWidth, host.offsetHeight));
+      camera.zoom = minDim / 2;
+      camera.updateProjectionMatrix();
+    };
+
+    updateCameraRef.current = updateCamera;
+    updateCamera();
+    const ro = new ResizeObserver(updateCamera);
+    ro.observe(host);
+    return () => {
+      ro.disconnect();
+      updateCameraRef.current = () => { };
+    };
+  }, []);
+
+  useEffect(() => {
+    const schedule = () => {
+      window.requestAnimationFrame(() => {
+        updateCameraRef.current();
+      });
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") schedule();
+    };
+
+    schedule();
+    window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    window.addEventListener("orientationchange", schedule);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+      window.removeEventListener("orientationchange", schedule);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -202,7 +253,11 @@ export function XraCenterStage({
 
   useEffect(() => {
     const applyResolved = (resolved: "light" | "dark") => {
-      color.current.set(resolved === "dark" ? 0xffffff : 0x000000);
+      if (colorRole === "foreground") {
+        color.current.set(resolved === "dark" ? 0xffffff : 0x000000);
+        return;
+      }
+      color.current.set(resolved === "dark" ? 0x000000 : 0xffffff);
     };
 
     applyResolved(document.documentElement.classList.contains("dark") ? "dark" : "light");
@@ -215,9 +270,14 @@ export function XraCenterStage({
 
     window.addEventListener("xra:theme", onThemeEvent);
     return () => window.removeEventListener("xra:theme", onThemeEvent);
-  }, []);
+  }, [colorRole]);
 
   useEffect(() => {
+    if (!interactive) {
+      hover.current = 0;
+      pointer.current.set(0, 0);
+      return;
+    }
     const host = hostRef.current;
     if (!host) return;
 
@@ -388,7 +448,7 @@ export function XraCenterStage({
       host.removeEventListener("contextmenu", onContextMenu);
       resetPress();
     };
-  }, []);
+  }, [interactive]);
 
   return (
     <section className={cn("relative isolate flex items-center justify-center", className)}>
@@ -399,12 +459,13 @@ export function XraCenterStage({
           style={{
             width: size,
             height: size,
-            touchAction: "none",
+            touchAction: interactive ? "none" : "auto",
           }}
-          role="button"
-          tabIndex={0}
-          aria-label={ariaLabel}
+          role={interactive ? "button" : undefined}
+          tabIndex={interactive ? 0 : undefined}
+          aria-label={interactive ? ariaLabel : undefined}
           onKeyDown={(e) => {
+            if (!interactive) return;
             if (e.key !== "Enter" && e.key !== " ") return;
             e.preventDefault();
             onActivateRef.current?.();
@@ -417,9 +478,12 @@ export function XraCenterStage({
             camera={{ position: [0, 0, 2], zoom: 120 }}
             gl={{ alpha: true, antialias: true, premultipliedAlpha: false, powerPreference: "low-power" }}
             className="absolute inset-0"
-            onCreated={({ gl }) => {
+            onCreated={({ gl, camera }) => {
               gl.setClearColor(0x000000, 0);
               setCanvasEl(gl.domElement);
+              orthoCameraRef.current = camera instanceof THREE.OrthographicCamera ? camera : null;
+              updateCameraRef.current();
+              window.requestAnimationFrame(() => updateCameraRef.current());
             }}
           >
             <BlobPlane hover={hover} press={press} radius={radius} color={color} pointer={pointer} />

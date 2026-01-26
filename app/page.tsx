@@ -1,41 +1,47 @@
 import { FullScreenContainer } from "@/features/full-screen-container";
 import { SOCIAL_LINKS } from "@/lib/social";
 import { HeroSection } from "@/components/layout/hero";
+import { MobileHomeOneScreen } from "@/components/layout/home/MobileHomeOneScreen";
 
 export default function Home() {
   const year = new Date().getFullYear();
 
   return (
-    <FullScreenContainer className="min-h-dvh justify-center pt-[calc(env(safe-area-inset-top)+6.5rem)] pb-[calc(env(safe-area-inset-bottom)+3rem)]">
-      <HeroSection />
+    <FullScreenContainer className="min-h-dvh justify-center pt-[calc(env(safe-area-inset-top)+5.25rem)] pb-[calc(env(safe-area-inset-bottom)+2.25rem)] md:pt-[calc(env(safe-area-inset-top)+6.5rem)] md:pb-[calc(env(safe-area-inset-bottom)+3rem)]">
+      <div className="w-full md:hidden">
+        <MobileHomeOneScreen />
+      </div>
 
-      <nav
-        aria-label="社交媒体"
-        className="home-footer absolute left-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60]"
-      >
-        <div className="relative flex flex-wrap items-center gap-1.5 min-[760px]:gap-2">
-          {SOCIAL_LINKS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <a
-                key={item.id}
-                href={item.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label={item.label}
-                title={item.label}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground/60 transition-[color] hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/60 active:bg-foreground/10 min-[760px]:h-10 min-[760px]:w-10"
-              >
-                <Icon size={18} stroke={1.7} />
-              </a>
-            );
-          })}
-        </div>
-      </nav>
+      <div className="hidden w-full md:block">
+        <HeroSection />
+        <nav
+          aria-label="社交媒体"
+          className="home-footer absolute left-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-60"
+        >
+          <div className="relative flex flex-wrap items-center gap-1.5 min-[760px]:gap-2">
+            {SOCIAL_LINKS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={item.label}
+                  title={item.label}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground/60 transition-[color] hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/60 active:bg-foreground/10 min-[760px]:h-10 min-[760px]:w-10"
+                >
+                  <Icon size={18} stroke={1.7} />
+                </a>
+              );
+            })}
+          </div>
+        </nav>
 
-      <footer className="home-footer h-9 pointer-events-none absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[50] flex items-center justify-center px-4">
-        <p className="text-xs tracking-wide text-muted-foreground/80">© {year} Xra. All rights reserved.</p>
-      </footer>
+        <footer className="home-footer h-9 pointer-events-none absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-50 flex items-center justify-center px-4">
+          <p className="text-xs tracking-wide text-muted-foreground/80">© {year} Xra. All rights reserved.</p>
+        </footer>
+      </div>
     </FullScreenContainer>
   );
 }

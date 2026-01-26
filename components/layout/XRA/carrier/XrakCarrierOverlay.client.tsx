@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { XraCenterStage } from "@/components/layout/XRA";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import gsap from "gsap";
 import {
   selectChatOpen,
   selectCloseSidePanel,
@@ -45,9 +44,10 @@ export default function XrakCarrierOverlay() {
   const stageSize = useElementSize(stageLayoutRef);
   const dockInsets = useDockInsets(dockInsetRef);
   const isHome = pathname === "/";
+  const isHomeCenter = isHome && isDesktop;
 
-  const baseMarginRight = 20;
-  const baseMarginBottom = 20;
+  const baseMarginRight = 28;
+  const baseMarginBottom = 28;
 
   const resolvedInsets = React.useMemo(
     () => ({
@@ -61,39 +61,75 @@ export default function XrakCarrierOverlay() {
     return Math.min(max, Math.max(min, value));
   }, []);
 
-  const w = stageSize.width || 1;
-  const h = stageSize.height || 1;
-  const vw = viewport.width || 1;
-  const vh = viewport.height || 1;
-
-  const desiredDockPx = isDesktop ? 84 : 56;
-  const baseSize = Math.max(1, Math.min(w, h));
-  const dockScale = clampNumber(desiredDockPx / baseSize, 0.1, 0.22);
-  const targetScale = isHome ? 1 : dockScale;
-
-  const targetX = isHome ? 0 : vw / 2 - resolvedInsets.right - (w * targetScale) / 2;
-  const mobileHeaderOffsetPx = 64;
-  const homeMobileCenterY = vh * 0.26 + mobileHeaderOffsetPx;
-  const homeMobileTargetY = homeMobileCenterY - vh / 2;
-  const targetY = isHome ? (isDesktop ? 0 : homeMobileTargetY) : vh / 2 - resolvedInsets.bottom - (h * targetScale) / 2;
+  const [stable, setStable] = React.useState(() => ({
+    w: 1,
+    h: 1,
+    vw: 0,
+    vh: 0,
+    rightInset: 20,
+    bottomInset: 20,
+  }));
 
   React.useEffect(() => {
-    const root = document.documentElement;
-    if (!isHome || isDesktop) {
-      root.style.removeProperty("--xra-home-stage-y");
-      return;
-    }
-    root.style.setProperty("--xra-home-stage-y", `${homeMobileCenterY}px`);
-    return () => {
-      root.style.removeProperty("--xra-home-stage-y");
-    };
-  }, [homeMobileCenterY, isDesktop, isHome]);
+    setStable((prev) => ({
+      w: stageSize.width > 0 ? stageSize.width : prev.w,
+      h: stageSize.height > 0 ? stageSize.height : prev.h,
+      vw: viewport.width > 0 ? viewport.width : prev.vw,
+      vh: viewport.height > 0 ? viewport.height : prev.vh,
+      rightInset: resolvedInsets.right > 0 ? resolvedInsets.right : prev.rightInset,
+      bottomInset: resolvedInsets.bottom > 0 ? resolvedInsets.bottom : prev.bottomInset,
+    }));
+  }, [
+    resolvedInsets.bottom,
+    resolvedInsets.right,
+    stageSize.height,
+    stageSize.width,
+    viewport.height,
+    viewport.width,
+  ]);
+
+  const w = stageSize.width || stable.w || 1;
+  const h = stageSize.height || stable.h || 1;
+  const vw = viewport.width || stable.vw || 0;
+  const vh = viewport.height || stable.vh || 0;
+  const rightInset = resolvedInsets.right || stable.rightInset || 20;
+  const bottomInset = resolvedInsets.bottom || stable.bottomInset || 20;
+
+  const desiredDockPx = isDesktop ? 56 : 40;
+  const homeCenterStageSizeCss = "clamp(240px, 34vmin, 520px)";
+  const stageSizeCss = isHomeCenter ? homeCenterStageSizeCss : `${desiredDockPx}px`;
+
+  const effectiveW = isHomeCenter ? w : desiredDockPx;
+  const effectiveH = isHomeCenter ? h : desiredDockPx;
+  const motionReady = vw > 0 && vh > 0 && effectiveW > 0 && effectiveH > 0;
+
+  const clampX = React.useCallback(
+    (left: number, width: number) => {
+      const max = Math.max(0, vw - width);
+      return clampNumber(left, 0, max);
+    },
+    [clampNumber, vw],
+  );
+
+  const clampY = React.useCallback(
+    (top: number, height: number) => {
+      const max = Math.max(0, vh - height);
+      return clampNumber(top, 0, max);
+    },
+    [clampNumber, vh],
+  );
+
+  const desiredLeft = isHomeCenter ? vw / 2 - effectiveW / 2 : vw - rightInset - effectiveW;
+  const desiredTop = isHomeCenter ? vh / 2 - effectiveH / 2 : vh - bottomInset - effectiveH;
+
+  const clampedLeft = isHomeCenter ? desiredLeft : clampX(desiredLeft, effectiveW);
+  const clampedTop = isHomeCenter ? desiredTop : clampY(desiredTop, effectiveH);
+
+  const targetX = clampedLeft - vw / 2;
+  const targetY = clampedTop - vh / 2;
 
   const openChat = React.useCallback(() => openSidePanel("chat"), [openSidePanel]);
   const closeChat = React.useCallback(() => closeSidePanel(), [closeSidePanel]);
-
-  const motionReady =
-    viewport.width > 0 && viewport.height > 0 && stageSize.width > 0 && stageSize.height > 0;
 
   React.useEffect(() => {
     if (prefersReducedMotion) return;
@@ -132,12 +168,13 @@ export default function XrakCarrierOverlay() {
     }
 
     let raf = 0;
-    const setScale = gsap.quickSetter(el, "scale", "number");
-    const setVoice = gsap.quickSetter(el, "--xra-voice");
+    const setScale = (value: number) => {
+      el.style.transform = `scale(${value})`;
+    };
     const targetTau = 920;
     const beatTau = 280;
     const minScale = 1.0;
-    const maxShell = 0.012;
+    const maxShell = 0.0024;
     const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
     const softClip = (v: number) => {
       const x = Math.max(0, v);
@@ -157,19 +194,19 @@ export default function XrakCarrierOverlay() {
       const release = 1 - Math.exp(-dt / 520);
       state.value = state.value + (target - state.value) * (target > state.value ? attack : release);
 
-      const idle = 0.055 + 0.018 * Math.sin(now * 0.00105);
+      const idle = 0.028 + 0.01 * Math.sin(now * 0.00105);
       const base = clamp01(idle + state.value);
       const shaped = clamp01(Math.pow(base, 0.82));
       const phase = now * 0.0081;
       const wave = 0.5 + 0.5 * Math.sin(phase);
 
-      const baseline = 0.07 + 0.06 * shaped;
-      const amplitude = 0.08 + 0.22 * shaped;
+      const baseline = 0.045 + 0.04 * shaped;
+      const amplitude = 0.05 + 0.14 * shaped;
 
       const timeSinceBeat = Math.max(0, now - state.lastBeatAt);
       const beatWave = Math.exp(-timeSinceBeat / 420) * Math.max(0, Math.sin(timeSinceBeat * 0.016));
 
-      const raw = baseline + amplitude * wave + state.beat * 0.72 * beatWave;
+      const raw = baseline + amplitude * wave + state.beat * 0.42 * beatWave;
       const e = clamp01(softClip(raw));
 
       const wobble =
@@ -179,7 +216,6 @@ export default function XrakCarrierOverlay() {
         0.1 * Math.sin(phase * 3.1 + 2.4);
       const shell = minScale + maxShell * e * wobble;
       setScale(shell);
-      setVoice(e.toFixed(4));
 
       window.dispatchEvent(new CustomEvent("xra:voice", { detail: { energy: e } }));
 
@@ -191,58 +227,57 @@ export default function XrakCarrierOverlay() {
   }, [prefersReducedMotion]);
 
   const baseRadius = isDesktop ? 0.78 : 0.8;
-  const stageSizeCss = isHome && !isDesktop ? "clamp(220px, 52vmin, 420px)" : undefined;
 
   return (
     <>
       <div
         ref={dockInsetRef}
-        className="fixed right-[calc(env(safe-area-inset-right)+1.25rem)] bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] h-px w-px"
+        className="fixed right-[calc(env(safe-area-inset-right)+1.5rem)] bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] h-px w-px"
         aria-hidden="true"
       />
 
-      <motion.div
-        initial={false}
-        className="fixed -translate-x-1/2 -translate-y-1/2 z-[70] pointer-events-none"
-        animate={{
-          x: targetX,
-          y: targetY,
-          scale: targetScale,
-          opacity: motionReady ? 1 : 0,
-        }}
-        transition={
-          prefersReducedMotion || !motionReady
-            ? { duration: 0 }
-            : carrierTransition
-        }
-        style={{ transformOrigin: "center", left: "50vw", top: "50dvh" }}
-      >
-        <div className="pointer-events-auto">
-          <div ref={stageLayoutRef}>
-            <div ref={typingScaleRef} className="xra-voice-shell">
-              <XraCenterStage
-                className="select-none"
-                forceHover={!isHome}
-                baseRadius={baseRadius}
-                size={stageSizeCss}
-                voiceEventName="xra:voice"
-                onActivate={isRouteLoading ? undefined : isHome ? undefined : openChat}
-                onLongPress={openChat}
-              />
+      <div className="fixed left-[50vw] top-[50dvh] h-px w-px z-70 pointer-events-none">
+        <motion.div
+          initial={false}
+          className="pointer-events-none"
+          animate={{
+            x: motionReady ? targetX : 0,
+            y: motionReady ? targetY : 0,
+            scale: 1,
+            opacity: motionReady ? 1 : 0,
+          }}
+          transition={
+            prefersReducedMotion || !motionReady
+              ? { duration: 0 }
+              : carrierTransition
+          }
+          style={{ transformOrigin: "top left" }}
+        >
+          <div className="pointer-events-auto">
+            <div ref={stageLayoutRef}>
+              <div ref={typingScaleRef} className="xra-voice-shell">
+                <XraCenterStage
+                  key={isHomeCenter ? "home" : "dock"}
+                  className="select-none"
+                  forceHover={!isHome}
+                  interactive
+                  colorRole="foreground"
+                  baseRadius={baseRadius}
+                  size={stageSizeCss}
+                  voiceEventName="xra:voice"
+                  onActivate={isRouteLoading ? undefined : isHomeCenter ? undefined : openChat}
+                  onLongPress={isRouteLoading ? undefined : openChat}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
 
       <style jsx global>{`
         .xra-voice-shell {
-          --xra-voice: 0;
           position: relative;
-        }
-
-        .xra-voice-shell::before,
-        .xra-voice-shell::after {
-          content: none;
+          isolation: isolate;
         }
       `}</style>
 
