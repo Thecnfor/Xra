@@ -28,7 +28,7 @@ export default function XrakChatSheet({
   desktopSide = "right",
   className,
 }: XrakChatSheetProps) {
-  const isDesktop = useMediaQuery("(min-width: 640px)");
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const side = isDesktop ? desktopSide : "bottom";
   const [messages, setMessages] = React.useState<ChatMessage[]>(() => [
     {

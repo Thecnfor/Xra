@@ -2,7 +2,7 @@ import { RouteLoadingBridge } from "@/components/layout/XRA/route-loading/RouteL
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[60] pointer-events-auto">
+    <div className="fixed inset-0 z-60 pointer-events-auto">
       <RouteLoadingBridge />
       <div className="absolute inset-0 xra-loading-scrim" aria-hidden="true" />
       <div className="absolute inset-0 xra-loading-wipe" aria-hidden="true" />

@@ -22,7 +22,7 @@ import { carrierTransition } from "./motion/carrier-motion";
 export default function XrakCarrierOverlay() {
   const pathname = usePathname();
   const prefersReducedMotion = usePrefersReducedMotion();
-  const isDesktop = useMediaQuery("(min-width: 640px)");
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const chatOpen = useAppStore(selectChatOpen);
   const isRouteLoading = useAppStore(selectIsRouteLoading);
   const openSidePanel = useAppStore(selectOpenSidePanel);

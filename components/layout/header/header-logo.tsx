@@ -9,7 +9,7 @@ export type XRAKProps = {
   priority?: boolean;
 };
 
-export function XRAK({ className, href = "/", priority = true }: XRAKProps) {
+export function XRAK({ className, href = "/", priority = false }: XRAKProps) {
   return (
     <Link
       href={href}

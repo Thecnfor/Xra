@@ -13,6 +13,12 @@ const THEME_CURRENT_SNAPSHOT_KEY = "xra:theme.current";
 const THEME_LEGACY_STORAGE_KEY = "theme";
 const THEME_EVENT_NAME = "xra:theme";
 
+type IdleCallbackOptions = { timeout?: number };
+type IdleWindow = Window & {
+  requestIdleCallback?: (callback: () => void, options?: IdleCallbackOptions) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 function applyThemeDom(theme: "light" | "dark") {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
@@ -70,7 +76,11 @@ async function ensureIndexedDbSync() {
 
 export function ThemePostInit() {
   useEffect(() => {
-    void ensureIndexedDbSync().catch(() => {});
+    const w = window as unknown as IdleWindow;
+    const idleHandle =
+      w.requestIdleCallback?.(() => {
+        void ensureIndexedDbSync().catch(() => {});
+      }, { timeout: 2500 }) ?? window.setTimeout(() => void ensureIndexedDbSync().catch(() => {}), 1200);
 
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
     let observed = readSystemTheme();
@@ -94,6 +104,8 @@ export function ThemePostInit() {
     else mql.addListener(onChange);
 
     return () => {
+      w.cancelIdleCallback?.(idleHandle);
+      window.clearTimeout(idleHandle);
       if (mql.removeEventListener) mql.removeEventListener("change", onChange);
       else mql.removeListener(onChange);
     };
