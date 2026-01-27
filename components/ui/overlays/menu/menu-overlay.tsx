@@ -21,7 +21,6 @@ export type MenuOverlayProps = {
   onNavigate?: (item: MenuOverlayItem) => void;
   header?: React.ReactNode;
   footer?: React.ReactNode;
-  logoSlotId?: string;
   overlayClassName?: string;
   panelClassName?: string;
   exitMs?: number;
@@ -39,7 +38,6 @@ function MenuOverlay({
   onNavigate,
   header,
   footer,
-  logoSlotId = "xra-menu-logo-slot",
   overlayClassName,
   panelClassName,
   exitMs,
@@ -49,7 +47,12 @@ function MenuOverlay({
 }: MenuOverlayProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
   const side: SheetSide = isDesktop ? desktopSide : mobileSide;
-  const enableStagger = side === "top";
+  const enableStagger = true;
+  const resolvedPanelClassName = cn(
+    panelClassName,
+    side === "top" ? "h-auto max-h-[100dvh]" : null,
+  );
+  const [itemsMotionOpen, setItemsMotionOpen] = React.useState(false);
   const handleNavigate = React.useCallback(
     (item: MenuOverlayItem) => {
       onNavigate?.(item);
@@ -57,6 +60,26 @@ function MenuOverlay({
     },
     [onNavigate, onClose],
   );
+
+  React.useLayoutEffect(() => {
+    if (!open) {
+      setItemsMotionOpen(false);
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (prefersReducedMotion) {
+      setItemsMotionOpen(true);
+      return;
+    }
+
+    setItemsMotionOpen(false);
+    const raf = window.requestAnimationFrame(() => setItemsMotionOpen(true));
+    return () => window.cancelAnimationFrame(raf);
+  }, [open, side]);
 
   return (
     <Sheet
@@ -66,7 +89,7 @@ function MenuOverlay({
       onClose={onClose}
       side={side}
       label={label}
-      panelClassName={panelClassName}
+      panelClassName={resolvedPanelClassName}
       exitMs={exitMs}
       unmountOnClose={unmountOnClose}
       overlayClassName={cn(
@@ -81,7 +104,8 @@ function MenuOverlay({
     >
       <div
         className={cn(
-          "relative h-full bg-background/66 backdrop-blur-2xl backdrop-saturate-150 dark:bg-background/55",
+          "relative bg-background/66 backdrop-blur-2xl backdrop-saturate-150 dark:bg-background/55",
+          side === "top" ? "h-auto" : "h-full",
           "before:pointer-events-none before:absolute before:inset-0 before:content-[''] before:shadow-2xl before:shadow-black/10 before:transition-opacity before:duration-sidebar before:ease-curve-sidebar motion-reduce:before:transition-none dark:before:shadow-black/40",
           open ? "before:opacity-100" : "before:opacity-0",
           side === "top"
@@ -121,29 +145,27 @@ function MenuOverlay({
 
         <div
           className={cn(
-            "flex h-full flex-col overflow-y-auto overscroll-contain",
+            "flex flex-col",
+            side === "top" ? null : "h-full",
             side === "top"
-              ? "px-5 pt-[calc(env(safe-area-inset-top)+5.5rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)]"
+              ? "px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.25rem)]"
               : "px-6 pt-6 pb-8",
           )}
         >
           <div className="flex items-start">
             {header ?? (
-              <div className="select-none">
-                <div id={logoSlotId} className="h-8" />
-                <div className="mt-2 text-xs font-medium tracking-[0.22em] text-muted-foreground">
-                  MENU
-                </div>
+              <div className="select-none text-xs font-medium tracking-[0.22em] text-muted-foreground">
+                MENU
               </div>
             )}
           </div>
 
-          <div className="mt-10">
+          <div className={cn(side === "top" ? "mt-6" : "mt-10")}>
             <div className="text-[11px] font-medium tracking-[0.24em] text-muted-foreground">
               NAVIGATION
             </div>
 
-            <nav className="mt-4 space-y-2">
+            <nav className={cn(side === "top" ? "mt-3 space-y-1.5" : "mt-4 space-y-2")}>
               {items.map((item, index) => (
                 <Link
                   key={item.href}
@@ -155,17 +177,21 @@ function MenuOverlay({
                     className={cn(
                       "transition-[opacity,translate] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
                       enableStagger ? "[transition-delay:var(--menu-delay)]" : null,
-                      open
-                        ? "opacity-100 translate-y-0"
-                        : enableStagger
-                          ? "opacity-0 -translate-y-2"
-                          : "opacity-100 translate-y-0",
+                      itemsMotionOpen
+                        ? side === "right" || side === "left"
+                          ? "opacity-100 translate-x-0 translate-y-0"
+                          : "opacity-100 translate-x-0 translate-y-0"
+                        : side === "right"
+                          ? "opacity-0 translate-x-6 translate-y-0"
+                          : side === "left"
+                            ? "opacity-0 -translate-x-6 translate-y-0"
+                            : "opacity-0 -translate-y-2 translate-x-0",
                     )}
                     style={
                       enableStagger
                         ? ({
                           "--menu-delay": open
-                            ? `${120 + index * 60}ms`
+                            ? `${80 + index * 60}ms`
                             : "0ms",
                         } as React.CSSProperties)
                         : undefined
@@ -188,13 +214,7 @@ function MenuOverlay({
             </nav>
           </div>
 
-          <div className="mt-auto pt-8">
-            {footer ?? (
-              <div className="rounded-2xl surface-glass px-4 py-3 text-xs text-muted-foreground">
-                按 Esc 关闭，或点击空白处返回
-              </div>
-            )}
-          </div>
+          {!isDesktop && footer ? <div className="mt-8">{footer}</div> : null}
         </div>
       </div>
     </Sheet>

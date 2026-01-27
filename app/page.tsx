@@ -1,10 +1,14 @@
-import { FullScreenContainer } from "@/features/full-screen-container";
 import { SOCIAL_LINKS } from "@/lib/social";
 import { HomeHero } from "@/components/layout/hero/HomeHero";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   return (
-    <FullScreenContainer className="min-h-dvh justify-center pt-[calc(env(safe-area-inset-top)+5.25rem)] pb-[calc(env(safe-area-inset-bottom)+2.25rem)] md:pt-[calc(env(safe-area-inset-top)+6.5rem)] md:pb-[calc(env(safe-area-inset-bottom)+3rem)]">
+    <main className={cn(
+      "relative z-10 flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden px-4",
+      "pt-[calc(env(safe-area-inset-top)+5.25rem)] pb-[calc(env(safe-area-inset-bottom)+2.25rem)]",
+      "md:pt-[calc(env(safe-area-inset-top)+6.5rem)] md:pb-[calc(env(safe-area-inset-bottom)+3rem)]"
+    )}>
       <h1 className="sr-only">Xra</h1>
 
       <HomeHero />
@@ -42,6 +46,6 @@ export default function Home() {
           </footer>
         </div>
       </div>
-    </FullScreenContainer>
+    </main>
   );
 }

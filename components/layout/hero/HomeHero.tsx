@@ -26,7 +26,7 @@ export function HomeHero() {
         </p>
 
         <Link
-          href="/explore"
+          href="/home"
           className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-foreground px-8 text-sm font-medium text-background transition-all hover:bg-foreground/90 active:scale-95"
         >
           Initialize
@@ -76,7 +76,7 @@ export function HomeHero() {
 
             {/* 快速入口 */}
             <Link
-              href="/about"
+              href="/home"
               className="group flex items-center gap-3 text-lg font-medium transition-colors hover:text-muted-foreground"
             >
               关于我们

@@ -12,6 +12,13 @@ export const selectAnySidePanelOpen = (state: AppState) => state.sidePanelActive
 export const selectIsRouteLoading = (state: AppState) => state.isRouteLoading;
 export const selectSetRouteLoading = (state: AppState) => state.setRouteLoading;
 
+export const selectIsXraBranchActive = (state: AppState) => state.isXraBranchActive;
+export const selectSetXraBranchActive = (state: AppState) => state.setXraBranchActive;
+
+export const selectIsSidebarDrawerOpen = (state: AppState) => state.isSidebarDrawerOpen;
+export const selectSetSidebarDrawerOpen = (state: AppState) => state.setSidebarDrawerOpen;
+export const selectToggleSidebarDrawer = (state: AppState) => state.toggleSidebarDrawer;
+
 export const selectMenuOpen = (state: AppState) => state.sidePanelActiveId === "menu";
 export const selectSetMenuOpen = (state: AppState) => (open: boolean) => {
   if (open) state.openSidePanel("menu");
