@@ -338,47 +338,47 @@ const TextAnimateBase = ({
 
   const finalVariants = variants
     ? {
+      container: {
+        hidden: { opacity: 0 },
+        show: {
+          opacity: 1,
+          transition: {
+            opacity: { duration: 0.01, delay },
+            delayChildren: delay,
+            staggerChildren: duration / segments.length,
+          },
+        },
+        exit: {
+          opacity: 0,
+          transition: {
+            staggerChildren: duration / segments.length,
+            staggerDirection: -1,
+          },
+        },
+      },
+      item: variants,
+    }
+    : animation
+      ? {
         container: {
-          hidden: { opacity: 0 },
+          ...defaultItemAnimationVariants[animation].container,
           show: {
-            opacity: 1,
+            ...defaultItemAnimationVariants[animation].container.show,
             transition: {
-              opacity: { duration: 0.01, delay },
               delayChildren: delay,
               staggerChildren: duration / segments.length,
             },
           },
           exit: {
-            opacity: 0,
+            ...defaultItemAnimationVariants[animation].container.exit,
             transition: {
               staggerChildren: duration / segments.length,
               staggerDirection: -1,
             },
           },
         },
-        item: variants,
+        item: defaultItemAnimationVariants[animation].item,
       }
-    : animation
-      ? {
-          container: {
-            ...defaultItemAnimationVariants[animation].container,
-            show: {
-              ...defaultItemAnimationVariants[animation].container.show,
-              transition: {
-                delayChildren: delay,
-                staggerChildren: duration / segments.length,
-              },
-            },
-            exit: {
-              ...defaultItemAnimationVariants[animation].container.exit,
-              transition: {
-                staggerChildren: duration / segments.length,
-                staggerDirection: -1,
-              },
-            },
-          },
-          item: defaultItemAnimationVariants[animation].item,
-        }
       : { container: defaultContainerVariants, item: defaultItemVariants }
 
   const content = (

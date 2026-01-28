@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { XraBranchBridge } from "@/layout/route-branch/XraBranchBridge.client";
+import { XraBranchBridge } from "@/components/layout/route-branch/XraBranchBridge.client";
 
 export const metadata: Metadata = {
   title: {

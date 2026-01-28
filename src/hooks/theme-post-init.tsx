@@ -40,13 +40,13 @@ function readSnapshot(key: string) {
 function writeSnapshot(key: string, value: string) {
   try {
     localStorage.setItem(key, value);
-  } catch {}
+  } catch { }
 }
 
 function removeSnapshot(key: string) {
   try {
     localStorage.removeItem(key);
-  } catch {}
+  } catch { }
 }
 
 async function ensureIndexedDbSync() {
@@ -79,8 +79,8 @@ export function ThemePostInit() {
     const w = window as unknown as IdleWindow;
     const idleHandle =
       w.requestIdleCallback?.(() => {
-        void ensureIndexedDbSync().catch(() => {});
-      }, { timeout: 2500 }) ?? window.setTimeout(() => void ensureIndexedDbSync().catch(() => {}), 1200);
+        void ensureIndexedDbSync().catch(() => { });
+      }, { timeout: 2500 }) ?? window.setTimeout(() => void ensureIndexedDbSync().catch(() => { }), 1200);
 
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
     let observed = readSystemTheme();
@@ -97,7 +97,7 @@ export function ThemePostInit() {
       void Promise.all([
         setPreference(THEME_BROWSER_PREFERENCE_KEY, next),
         setPreference(THEME_CURRENT_PREFERENCE_KEY, next),
-      ]).catch(() => {});
+      ]).catch(() => { });
     };
 
     if (mql.addEventListener) mql.addEventListener("change", onChange);

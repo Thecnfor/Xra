@@ -12,7 +12,7 @@ import { HeaderNav } from "./header-nav";
 import { XRAK } from "./header-logo";
 import { RealtimeIsland } from "./realtime-island";
 import { AnimatedThemeToggler } from "@/hooks/theme";
-import MenuButton from "@/features/meta/menu";
+import MenuButton from "@/components/features/meta/menu";
 
 // --- Components ---
 

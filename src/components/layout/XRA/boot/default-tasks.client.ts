@@ -25,7 +25,7 @@ registerXraBootTask({
     const db = getXraIndexedDb();
     const open = () => {
       if (signal.aborted) return;
-      void db.open().catch(() => {});
+      void db.open().catch(() => { });
     };
 
     const handle = w.requestIdleCallback?.(open, { timeout: 3000 }) ?? window.setTimeout(open, 1500);

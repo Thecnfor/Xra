@@ -3,11 +3,11 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { selectMenuOpen, selectCloseSidePanel, useAppStore } from "@/stores";
-import type { MenuOverlayProps } from "@/overlays";
+import type { MenuOverlayProps } from "@/components/ui/overlays";
 import { menuItems } from "./menu-items";
 
 const MenuOverlay = dynamic(
-  () => import("@/overlays").then((m) => m.MenuOverlay),
+  () => import("@/components/ui/overlays").then((m) => m.MenuOverlay),
   { ssr: false },
 );
 
@@ -22,7 +22,7 @@ export default function SiteMenu({ className, panelProps }: SiteMenuProps) {
   const open = useAppStore(selectMenuOpen);
   const closeSidePanel = useAppStore(selectCloseSidePanel);
   React.useEffect(() => {
-    import("@/overlays");
+    import("@/components/ui/overlays");
   }, []);
 
   const close = React.useCallback(() => closeSidePanel(), [closeSidePanel]);

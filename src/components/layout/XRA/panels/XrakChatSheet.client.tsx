@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Sheet } from "@/overlays";
+import { Sheet } from "@/components/ui/overlays";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 export type XrakChatSheetProps = {

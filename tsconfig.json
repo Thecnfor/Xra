@@ -24,28 +24,28 @@
     ],
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ],
       "@/layout": [
-        "./components/layout"
+        "./src/components/layout"
       ],
       "@/layout/*": [
-        "./components/layout/*"
+        "./src/components/layout/*"
       ],
       "@/features": [
-        "./components/features"
+        "./src/components/features"
       ],
       "@/features/*": [
-        "./components/features/*"
+        "./src/components/features/*"
       ],
       "@/overlays": [
-        "./components/ui/overlays"
+        "./src/components/ui/overlays"
       ],
       "@/overlays/*": [
-        "./components/ui/overlays/*"
+        "./src/components/ui/overlays/*"
       ],
       "@/prismaClient": [
-        "./prisma/generated/prisma/client"
+        "./src/prisma/generated/prisma/client"
       ],
     }
   },

@@ -8,7 +8,7 @@ import {
   OverlayContent,
   OverlayRoot,
   useOverlayControls,
-} from "@/overlays";
+} from "@/components/ui/overlays";
 
 export type IslandMessage = {
   id: string;
