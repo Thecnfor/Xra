@@ -27,7 +27,7 @@ export function createUiSlice<T extends UiSlice>(
     sidePanelActiveId: init?.sidePanelActiveId ?? null,
     isRouteLoading: init?.isRouteLoading ?? false,
     isXraBranchActive: init?.isXraBranchActive ?? false,
-    isSidebarDrawerOpen: init?.isSidebarDrawerOpen ?? false,
+    isSidebarDrawerOpen: init?.isSidebarDrawerOpen ?? true,
     openSidePanel: (sidePanelActiveId) => set({ sidePanelActiveId } as Partial<T>),
     closeSidePanel: () => set({ sidePanelActiveId: null } as Partial<T>),
     toggleSidePanel: (id) =>

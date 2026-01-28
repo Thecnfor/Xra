@@ -77,7 +77,9 @@ export function XraSidebarLayout({
             open ? "w-[200px]" : "w-0",
           )}
         />
-        <div className="min-w-0 flex-1">{children}</div>
+        <div className="min-w-0 flex-1 pt-[calc(env(safe-area-inset-top)+var(--header-height))]">
+          {children}
+        </div>
       </div>
 
       <div
@@ -93,7 +95,7 @@ export function XraSidebarLayout({
           id="sidebar-drawer"
           className={cn(
             "h-full w-full",
-            "bg-background/60 backdrop-blur-xl",
+            "bg-background",
           )}
         >
           <div className="flex h-full w-full flex-col">
