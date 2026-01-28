@@ -8,6 +8,7 @@ import SiteMenu from "@/components/layout/menu";
 import { themeInitScript } from "@/lib/theme-init-script";
 import { XraBootShell } from "@/components/layout/XRA";
 import XrakCarrierOverlay from "@/components/layout/XRA/carrier/XrakCarrierOverlay.lazy";
+import { CommonLayout } from "@/components/features/common-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,7 +84,9 @@ export default function RootLayout({
           <div className="xra-invert-on-loading">
             <SiteHeader />
             <SiteMenu />
-            {children}
+            <CommonLayout>
+              {children}
+            </CommonLayout>
           </div>
           <XrakCarrierOverlay />
         </XraBootShell>

@@ -1,13 +1,15 @@
 import { SOCIAL_LINKS } from "@/lib/social";
 import { HomeHero } from "@/components/layout/hero/HomeHero";
 import { cn } from "@/lib/utils";
+import { CommonLayout } from "@/components/features/common-layout";
 
 export default function Home() {
   return (
-    <main className={cn(
-      "relative z-10 flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden px-4",
-      "pt-[calc(env(safe-area-inset-top)+5.25rem)] pb-[calc(env(safe-area-inset-bottom)+2.25rem)]",
-      "md:pt-[calc(env(safe-area-inset-top)+6.5rem)] md:pb-[calc(env(safe-area-inset-bottom)+3rem)]"
+    <CommonLayout className={cn(
+      "relative flex w-full flex-col",
+      "z-10 items-center justify-center overflow-hidden px-4",
+      "pb-[calc(env(safe-area-inset-bottom)+2.25rem)] pt-[calc(env(safe-area-inset-top)+var(--header-height))]",
+      "md:pb-[calc(env(safe-area-inset-bottom)+3rem)]"
     )}>
       <h1 className="sr-only">Xra</h1>
 
@@ -46,6 +48,6 @@ export default function Home() {
           </footer>
         </div>
       </div>
-    </main>
+    </CommonLayout>
   );
 }

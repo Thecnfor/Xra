@@ -51,6 +51,9 @@
 
 :root {
   --radius: 0.625rem;
+  --header-pt: 0.95rem;
+  --header-pb: 0.75rem;
+  --header-height: calc(var(--header-pt) + var(--header-pb) + 2.75rem);
   --background: oklch(1 0 0);
   --foreground: oklch(0 0 0);
   --card: oklch(1 0 0);
@@ -84,6 +87,13 @@
   --sidebar-ring: oklch(0 0 0 / 28%);
   --xra-loading-bg-raw: #000000;
   --xra-loading-fg-raw: #ffffff;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --header-pt: 1.25rem;
+    --header-pb: 1rem;
+  }
 }
 
 .dark {
@@ -127,14 +137,26 @@
     @apply border-border outline-ring/50;
   }
 
+  /* 亮色主题下的选中状态 */
   ::selection {
-    background: #000000;
-    color: #ffffff;
+    background: var(--foreground);
+    color: var(--background);
   }
 
   ::-moz-selection {
-    background: #000000;
-    color: #ffffff;
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  /* 暗色主题下的选中状态 */
+  .dark ::selection {
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  .dark ::-moz-selection {
+    background: var(--foreground);
+    color: var(--background);
   }
 
   body {
@@ -148,12 +170,10 @@
   }
 
   .xra-loading-divider {
-    background: linear-gradient(
-      to right,
-      transparent,
-      color-mix(in oklab, var(--xra-loading-fg-raw) 14%, transparent),
-      transparent
-    );
+    background: linear-gradient(to right,
+        transparent,
+        color-mix(in oklab, var(--xra-loading-fg-raw) 14%, transparent),
+        transparent);
   }
 
   .xra-loading-wipe {
@@ -169,6 +189,7 @@
     from {
       clip-path: circle(180% at 50% 50%);
     }
+
     to {
       clip-path: circle(0% at 50% 50%);
     }
