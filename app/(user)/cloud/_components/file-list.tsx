@@ -117,7 +117,7 @@ export function FileList({
                             y: 0,
                             filter: "blur(0px)",
                             transition: {
-                                delay: index * 0.05,
+                                delay: index * 0.1,
                                 duration: 0.4,
                                 ease: [0.16, 1, 0.3, 1],
                             },

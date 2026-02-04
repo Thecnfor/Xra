@@ -103,15 +103,16 @@ export function SiteHeader({
 
   return (
     <>
-      {/* 移动端 Logo 层 - 降低 z-index 使其位于菜单遮罩下方 */}
+      {/* 导航栏背景层 - 降低 z-index 使其位于菜单遮罩下方 */}
       <div
         className={cn(
-          "fixed top-0 left-0 right-0 z-60 pointer-events-none sm:hidden",
+          "fixed top-0 left-0 right-0 z-60 pointer-events-none",
           "bg-background/30 backdrop-blur-xl",
           className,
         )}
       >
-        <div className={containerClassName}>
+        {/* 移动端 Logo/Nav 容器 - 保持在 z-60，会被菜单遮挡 */}
+        <div className={cn("sm:hidden", containerClassName)}>
           <MobileHeaderLeft />
         </div>
       </div>
@@ -119,12 +120,14 @@ export function SiteHeader({
       <header
         className={cn(
           "xra-site-header fixed top-0 left-0 right-0 z-90 pointer-events-none",
-          "md:bg-background/30 md:backdrop-blur-xl",
           className,
         )}
       >
         <div className={cn("flex items-center", containerClassName)}>
-          <DesktopHeaderLeft />
+          {/* 桌面端 Logo/Nav 容器 - 保持在 z-90，不被菜单遮挡 */}
+          <div className="hidden sm:block">
+            <DesktopHeaderLeft />
+          </div>
 
           <div className="pointer-events-auto ml-auto flex items-center">
             {right ?? (
