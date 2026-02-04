@@ -107,6 +107,7 @@ export function SiteHeader({
       <div
         className={cn(
           "fixed top-0 left-0 right-0 z-60 pointer-events-none sm:hidden",
+          "bg-background/30 backdrop-blur-xl",
           className,
         )}
       >
@@ -118,7 +119,7 @@ export function SiteHeader({
       <header
         className={cn(
           "xra-site-header fixed top-0 left-0 right-0 z-90 pointer-events-none",
-          //"bg-background/30 backdrop-blur-xl",
+          "md:bg-background/30 md:backdrop-blur-xl",
           className,
         )}
       >

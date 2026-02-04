@@ -1,5 +1,5 @@
 import { SOCIAL_LINKS } from "@/lib/social";
-import { HomeHero } from "@/components/layout/hero/HomeHero";
+import { HomeHero } from "@/components/layout/hero/MainHero";
 import { cn } from "@/lib/utils";
 
 export default function Home() {

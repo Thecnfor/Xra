@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 
 interface LoginCardProps {
-  loginAction: (prevState: any, formData: FormData) => Promise<{ error?: string } | void>;
+  loginAction: (prevState: { error?: string } | void | null, formData: FormData) => Promise<{ error?: string } | void>;
   from: string;
 }
 

@@ -21,5 +21,9 @@ export default async function UserGroupLayout({
     const userId = token ? verifySession(token) : null;
 
     if (!userId) redirect("/login");
-    return <>{children}</>;
+    return (
+        <div className="h-screen min-w-0 flex-1 pt-[calc(env(safe-area-inset-top)+var(--header-height))]">
+            {children}
+        </div>
+    );
 }

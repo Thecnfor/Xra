@@ -14,7 +14,6 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/features/meta/button";
 import { TextAnimate } from "@/components/features/meta/text-animate";
-import { DottedGlowBackground } from "@/components/ui/background/dotted-glow-background";
 import { cn } from "@/lib/utils";
 
 interface DownloadItem {
@@ -103,13 +102,6 @@ export default function DownloadPage() {
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-background">
-      {/* 背景装饰 */}
-      <DottedGlowBackground
-        className="absolute inset-0 z-0"
-        opacity={0.4}
-        gap={20}
-        speedScale={0.5}
-      />
 
       <div className="relative z-10 container mx-auto px-6 py-20 max-w-6xl">
         {/* 头部标题区 */}
