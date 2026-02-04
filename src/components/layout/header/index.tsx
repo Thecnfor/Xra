@@ -111,9 +111,13 @@ export function SiteHeader({
           className,
         )}
       >
-        {/* 移动端 Logo/Nav 容器 - 保持在 z-60，会被菜单遮挡 */}
-        <div className={cn("sm:hidden", containerClassName)}>
-          <MobileHeaderLeft />
+        {/* 使用 containerClassName 撑开高度，确保背景模糊在桌面端也生效 */}
+        <div className={containerClassName}>
+          <div className="sm:hidden">
+            <MobileHeaderLeft />
+          </div>
+          {/* 桌面端背景占位，确保高度一致 */}
+          <div className="hidden h-11 sm:block" />
         </div>
       </div>
 
