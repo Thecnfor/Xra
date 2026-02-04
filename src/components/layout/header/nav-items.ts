@@ -8,7 +8,7 @@ const homeHeaderNavItems: HeaderNavItem[] = [
     { label: "Kongroo", href: "/Kongroo" },
     { label: "LUMIS", href: "/LUMIS" },
     { label: "CAMPUS", href: "/campus" },
-    { label: "HOME", href: "/" },
+    { label: "HOME", href: "/home" },
 ];
 
 export function getHeaderNavItemsForPathname(pathname: string): HeaderNavItem[] {

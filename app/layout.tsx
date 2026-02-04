@@ -8,7 +8,7 @@ import SiteMenu from "@/components/layout/menu";
 import { themeInitScript } from "@/lib/theme-init-script";
 import { XraBootShell } from "@/components/layout/XRA";
 import XrakCarrierOverlay from "@/components/layout/XRA/carrier/XrakCarrierOverlay.lazy";
-import { CommonLayout } from "@/components/features/common-layout";
+import { ReactQueryProvider } from "@/lib/storage/queryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -80,16 +80,16 @@ export default function RootLayout({
         <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <XraBootShell>
-          <div className="xra-invert-on-loading">
-            <SiteHeader />
-            <SiteMenu />
-            <CommonLayout>
+        <ReactQueryProvider>
+          <XraBootShell>
+            <div className="xra-invert-on-loading">
+              <SiteHeader />
+              <SiteMenu />
               {children}
-            </CommonLayout>
-          </div>
-          <XrakCarrierOverlay />
-        </XraBootShell>
+            </div>
+            <XrakCarrierOverlay />
+          </XraBootShell>
+        </ReactQueryProvider>
       </body>
     </html>
   );

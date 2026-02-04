@@ -69,7 +69,7 @@ export function XraSidebarLayout({
   }, [open]);
 
   return (
-    <div className={cn("relative min-h-dvh w-full", className)}>
+    <main className={cn("relative min-h-dvh w-full", className)}>
       <div className="flex min-h-dvh w-full">
         <div
           className={cn(
@@ -196,6 +196,6 @@ export function XraSidebarLayout({
           </div>
         </aside>
       </div>
-    </div>
+    </main>
   );
 }

@@ -43,10 +43,7 @@
       ],
       "@/overlays/*": [
         "./src/components/ui/overlays/*"
-      ],
-      "@/prismaClient": [
-        "./src/prisma/generated/prisma/client"
-      ],
+      ]
     }
   },
   "include": [

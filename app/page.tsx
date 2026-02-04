@@ -1,12 +1,11 @@
 import { SOCIAL_LINKS } from "@/lib/social";
 import { HomeHero } from "@/components/layout/hero/HomeHero";
 import { cn } from "@/lib/utils";
-import { CommonLayout } from "@/components/features/common-layout";
 
 export default function Home() {
   return (
-    <CommonLayout className={cn(
-      "relative flex w-full flex-col",
+    <main className={cn(
+      "relative flex w-full flex-col min-h-dvh",
       "z-10 items-center justify-center overflow-hidden px-4",
       "pb-[calc(env(safe-area-inset-bottom)+2.25rem)] pt-[calc(env(safe-area-inset-top)+var(--header-height))]",
       "md:pb-[calc(env(safe-area-inset-bottom)+3rem)]"
@@ -48,6 +47,6 @@ export default function Home() {
           </footer>
         </div>
       </div>
-    </CommonLayout>
+    </main>
   );
 }

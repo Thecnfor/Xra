@@ -1,9 +1,8 @@
 node_modules
 .next
-/app/generated/prisma
 .trae/documents
 .vercel
 vercel.json
 .vercelignore
 .env
-prisma/generated
+src/prisma/migrations
